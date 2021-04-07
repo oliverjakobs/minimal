@@ -1,21 +1,17 @@
-#include <Windows.h>
+
 
 #include "glad/glad.h"
 
 #include <stdio.h>
 
-LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#include "Minimal/MinimalUtil.h"
 
-#define MINIMAL_TRUE    1
-#define MINIMAL_FALSE   0
-
-HWND window_handle;
-HDC dc;
-HGLRC rc;
 
 typedef struct
 {
     HWND handle;
+    HDC device_context;
+    HGLRC render_context;
     int should_close;
 } MinimalWindow;
 
@@ -41,76 +37,23 @@ int MinimalCreateRenderContex(MinimalWindow* window)
             0,                     // reserved  
             0, 0, 0                // layer masks ignored  
     };
-    dc = GetDC(window->handle);
-    int pf = ChoosePixelFormat(dc, &pfd);
-    SetPixelFormat(dc, pf, &pfd);
-    rc = wglCreateContext(dc);
-    wglMakeCurrent(dc, rc);
+    window->device_context = GetDC(window->handle);
+    int pf = ChoosePixelFormat(window->device_context, &pfd);
+    SetPixelFormat(window->device_context, pf, &pfd);
+    window->render_context = wglCreateContext(window->device_context);
+    wglMakeCurrent(window->device_context, window->render_context);
 
     return 1;
 }
 
 int MinimalDestroyRenderContext(MinimalWindow* window)
 {
-    ReleaseDC(window->handle, dc);
-    wglDeleteContext(rc);
+    ReleaseDC(window->handle, window->device_context);
+    wglDeleteContext(window->render_context);
     return 1;
 }
 
-void MinimalCreateWindow(MinimalWindow* window, LPCWSTR title, int width, int height)
-{
-    wchar_t CLASS_NAME[] = L"MinimalWindowClass";
-    HINSTANCE instance = GetModuleHandleW(NULL);
-
-    WNDCLASS wnd_class = { 0 };
-    wnd_class.hInstance = instance;
-    wnd_class.lpfnWndProc = WindowProc;
-    wnd_class.lpszClassName = CLASS_NAME;
-
-    RegisterClassW(&wnd_class);
-
-    window->handle = CreateWindowExW(0, CLASS_NAME, title, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, instance, 0);
-    window->should_close = 0;
-
-    SetPropW(window->handle, L"Minimal", window);
-
-    MinimalCreateRenderContex(window);
-}
-
-void MinimalPollEvent(MinimalWindow* window)
-{
-    MSG msg;
-    while (PeekMessageW(&msg, window->handle, 0, 0, PM_REMOVE))
-    {
-        if (msg.message == WM_QUIT)
-            window->should_close = 0;
-
-        TranslateMessage(&msg);
-        DispatchMessageW(&msg);
-    }
-}
-
-
-int main()
-{
-    MinimalWindow window;
-    MinimalCreateWindow(&window, L"Minimal", 800, 600);
-
-    gladLoadGL();
-    glViewport(0, 0, 640, 480);
-
-    while (!window.should_close)
-    {
-        MinimalPollEvent(&window);
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        SwapBuffers(dc);
-    }
-
-    return 0;
-}
-
-LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     MinimalWindow* window = GetPropW(hwnd, L"Minimal");
     switch (msg)
@@ -126,4 +69,77 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     default: return DefWindowProcW(hwnd, msg, wParam, lParam);
     }
+}
+
+int MinimalCreateWindow(MinimalWindow* window, LPCWSTR title, int width, int height)
+{
+    WCHAR CLASS_NAME[] = L"MinimalWindowClass";
+    HINSTANCE instance = GetModuleHandleW(NULL);
+
+    WNDCLASSEXW wnd_class = { 0 };
+    wnd_class.cbSize = sizeof(WNDCLASSEXW);
+    wnd_class.hInstance = instance;
+    wnd_class.lpfnWndProc = MinimalWindowProc;
+    wnd_class.lpszClassName = CLASS_NAME;
+    wnd_class.lpszMenuName = NULL;
+    wnd_class.hIcon = LoadIconW(NULL, IDI_APPLICATION);
+    wnd_class.hIconSm = LoadIconW(NULL, IDI_APPLICATION);
+    wnd_class.hCursor = LoadCursorW(NULL, IDC_ARROW);
+
+    if (!RegisterClassExW(&wnd_class))
+    {
+        MINIMAL_ERROR("Failed to register WindowClass");
+        return MINIMAL_FAIL;
+    }
+
+    DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
+
+    window->handle = CreateWindowExW(0, CLASS_NAME, title, style, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, instance, 0);
+    window->should_close = 0;
+
+    MINIMAL_INFO("Window created");
+
+    SetPropW(window->handle, L"Minimal", window);
+
+    MinimalCreateRenderContex(window);
+
+    return MINIMAL_OK;
+}
+
+void MinimalPollEvent(MinimalWindow* window)
+{
+    MSG msg;
+    while (PeekMessageW(&msg, window->handle, 0, 0, PM_REMOVE))
+    {
+        if (msg.message == WM_QUIT)
+            window->should_close = 0;
+
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+}
+
+void MinimalSwapBuffer(MinimalWindow* window)
+{
+    SwapBuffers(window->device_context);
+}
+
+int main()
+{
+    MinimalWindow window;
+    MinimalCreateWindow(&window, L"Minimal", 800, 600);
+
+    gladLoadGL();
+    glViewport(0, 0, 640, 480);
+
+    while (!window.should_close)
+    {
+        MinimalPollEvent(&window);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        MinimalSwapBuffer(&window);
+    }
+
+    return 0;
 }
