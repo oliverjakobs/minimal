@@ -1,7 +1,9 @@
 #ifndef MINIMAL_UTIL_H
 #define MINIMAL_UTIL_H
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 
 #define MINIMAL_FAIL    0

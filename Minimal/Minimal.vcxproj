@@ -140,11 +140,13 @@
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\Minimal\MinimalUtil.c" />
+    <ClCompile Include="src\Minimal\MinimalWindow.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\glad\glad.h" />
     <ClInclude Include="src\glad\KHR\khrplatform.h" />
     <ClInclude Include="src\Minimal\MinimalUtil.h" />
+    <ClInclude Include="src\Minimal\MinimalWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
