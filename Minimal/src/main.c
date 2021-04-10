@@ -1,11 +1,14 @@
 
 #include "glad/glad.h"
 #include "Minimal/MinimalWindow.h"
+#include "Minimal/MinimalInput.h"
 
 int main()
 {
     MinimalWindow window;
     MinimalCreateWindow(&window, L"Minimal", 800, 600);
+
+    MinimalCreateKeyTable();
 
     gladLoadGL();
     glViewport(0, 0, 800, 600);
@@ -19,6 +22,9 @@ int main()
     while (!MinimalShouldClose(&window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        if (MinimalKeyPressed(&window, MINIMAL_KEY_ESCAPE))
+            MinimalCloseWindow(&window);
 
         MinimalPollEvent(&window);
         MinimalSwapBuffer(&window);

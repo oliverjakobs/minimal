@@ -10,7 +10,7 @@
 #define MINIMAL_KEY_MOD_CAPS_LOCK   0x0010
 #define MINIMAL_KEY_MOD_NUM_LOCK    0x0020
 
-int MinimalGetKeyMods();
+UINT MinimalGetKeyMods();
 
 #define MINIMAL_KEY_UNKNOWN			-1
 
@@ -129,12 +129,24 @@ int MinimalGetKeyMods();
 #define MINIMAL_KEY_RIGHT_ALT		279
 #define MINIMAL_KEY_RIGHT_SUPER		280
 
-#define MINIMAL_KEY_FIRST			KEY_ESCAPE
-#define MINIMAL_KEY_LAST			KEY_RIGHT_SUPER
+#define MINIMAL_KEY_FIRST			MINIMAL_KEY_ESCAPE
+#define MINIMAL_KEY_LAST			MINIMAL_KEY_RIGHT_SUPER
 
 void MinimalCreateKeyTable();
 
 /* tanslate win32 virtual key codes to minimal key codes */
-int MinimalTranslateKey(unsigned int key);
+int MinimalTranslateKey(UINT scancode);
+
+typedef enum
+{
+    MINIMAL_RELEASE = 0,
+    MINIMAL_PRESS = 1,
+    MINIMAL_REPEAT = 2
+} MinimalKeyState;
+
+void MinimalUpdateKey(MinimalWindow* window, UINT key, UINT scancode, MinimalKeyState action, UINT mods);
+
+int MinimalKeyPressed(MinimalWindow* window, UINT keycode);
+int MinimalKeyReleased(MinimalWindow* window, UINT keycode);
 
 #endif // !MINIMAL_INPUT_H

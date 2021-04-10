@@ -1,8 +1,8 @@
 #include "MinimalInput.h"
 
-unsigned MinimalGetKeyMods()
+UINT MinimalGetKeyMods()
 {
-    unsigned mods = 0;
+    UINT mods = 0;
     if (GetKeyState(VK_SHIFT) & 0x8000)                         mods |= MINIMAL_KEY_MOD_SHIFT;
     if (GetKeyState(VK_CONTROL) & 0x8000)                       mods |= MINIMAL_KEY_MOD_CONTROL;
     if (GetKeyState(VK_MENU) & 0x8000)                          mods |= MINIMAL_KEY_MOD_ALT;
@@ -16,7 +16,7 @@ static int minimal_key_table[512];
 
 void MinimalCreateKeyTable()
 {
-    memset(minimal_key_table, MINIMAL_KEY_UNKNOWN, minimal_key_table);
+    memset(minimal_key_table, MINIMAL_KEY_UNKNOWN, sizeof(minimal_key_table));
 
     minimal_key_table[0x00B] = MINIMAL_KEY_0;
     minimal_key_table[0x002] = MINIMAL_KEY_1;
@@ -128,7 +128,37 @@ void MinimalCreateKeyTable()
     minimal_key_table[0x04A] = MINIMAL_KEY_NP_SUBTRACT;
 }
 
-int MinimalTranslateKey(unsigned int key)
+int MinimalTranslateKey(UINT scancode)
 {
-    return minimal_key_table[key];
+    return minimal_key_table[scancode];
+}
+
+static int MinimalKeyValid(UINT keycode)
+{
+    return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
+}
+
+void MinimalUpdateKey(MinimalWindow* window, UINT key, UINT scancode, MinimalKeyState action, UINT mods)
+{
+    if (MinimalKeyValid(key))
+    {
+        MinimalKeyState prev = window->key_state[key];
+        if (action == MINIMAL_PRESS && prev == MINIMAL_RELEASE)     window->key_state[key] = MINIMAL_PRESS;
+        else if (action == MINIMAL_PRESS && prev == MINIMAL_PRESS)  window->key_state[key] = MINIMAL_REPEAT;
+        else if (action == MINIMAL_RELEASE)                         window->key_state[key] = MINIMAL_RELEASE;
+    }
+}
+
+int MinimalKeyPressed(MinimalWindow* window, UINT keycode)
+{
+    if (!MinimalKeyValid(keycode)) return 0;
+
+    MinimalKeyState state = window->key_state[keycode];
+    return state == MINIMAL_PRESS || state == MINIMAL_REPEAT;
+}
+
+int MinimalKeyReleased(MinimalWindow* window, UINT keycode)
+{
+    if (!MinimalKeyValid(keycode)) return 0;
+    return window->key_state[keycode] == MINIMAL_RELEASE;
 }

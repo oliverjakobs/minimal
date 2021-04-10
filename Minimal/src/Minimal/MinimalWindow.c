@@ -99,16 +99,12 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     case WM_KEYUP:
     case WM_SYSKEYUP:
     {
-        const UINT key = MinimalTranslateKey((UINT)wParam);
-        const UINT scancode = MapVirtualKeyA((UINT)wParam, MAPVK_VK_TO_VSC);
-        const UINT action = ((lParam >> 31) & 1) ? 0 : 1;
+        const UINT scancode = (lParam >> 16) & 0x1ff;
+        const UINT key = MinimalTranslateKey(scancode);
+        const MinimalKeyState action = ((lParam >> 31) & 1) ? MINIMAL_RELEASE : MINIMAL_PRESS;
         const UINT mods = MinimalGetKeyMods();
 
-        printf("key: %X\n", key);
-        printf("scancode: %X\n", scancode);
-        printf("action: %d\n", action);
-        printf("mods : %d\n", mods);
-        // _glfwInputKey(window, scancode, action, mods);
+        MinimalUpdateKey(window, key, scancode, action, mods);
         return 0;
     }
     default: return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -141,6 +137,8 @@ int MinimalCreateWindow(MinimalWindow* wnd, LPCWSTR title, int width, int height
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
     wnd->handle = CreateWindowExW(0, CLASS_NAME, title, style, x, y, width, height, 0, 0, wnd->instance, 0);
     wnd->should_close = 0;
+
+    memset(wnd->key_state, MINIMAL_RELEASE, sizeof(wnd->key_state));
 
     SetPropW(wnd->handle, L"Minimal", wnd);
 

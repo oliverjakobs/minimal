@@ -10,6 +10,8 @@ typedef struct
     HGLRC       render_context;
     HINSTANCE   instance;
 
+    int key_state[280];
+
     int should_close;
 } MinimalWindow;
 
