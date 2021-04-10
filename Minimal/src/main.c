@@ -9,13 +9,18 @@ int main()
 
     gladLoadGL();
     glViewport(0, 0, 800, 600);
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    MINIMAL_INFO("[OpenGL] Version: %s",        glGetString(GL_VERSION));
+    MINIMAL_INFO("[OpenGL] Vendor: %s",         glGetString(GL_VENDOR));
+    MINIMAL_INFO("[OpenGL] Renderer: %s",       glGetString(GL_RENDERER));
+    MINIMAL_INFO("[OpenGL] GLSL Version: %s",   glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     while (!MinimalShouldClose(&window))
     {
-        MinimalPollEvent(&window);
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        MinimalPollEvent(&window);
         MinimalSwapBuffer(&window);
     }
 
