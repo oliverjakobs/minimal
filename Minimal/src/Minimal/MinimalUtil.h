@@ -1,11 +1,6 @@
 #ifndef MINIMAL_UTIL_H
 #define MINIMAL_UTIL_H
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
-
 #define MINIMAL_FAIL    0
 #define MINIMAL_OK      1
 
@@ -55,18 +50,19 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  *                               Timer
  * -----------------------------------------------------------------------------------
  */
+#include <time.h>
+
 typedef struct
 {
-    double seconds;
     int frames;
     int fps;
 
-    double deltatime;
-    double lastframe;
+    clock_t deltatime;
+    clock_t start;
 } MinimalTimer;
 
 void MinimalTimerReset(MinimalTimer* timer);
-void MinimalTimerStart(MinimalTimer* timer, double seconds);
-void MinimalTimerEnd(MinimalTimer* timer, double seconds);
+void MinimalTimerStart(MinimalTimer* timer);
+void MinimalTimerEnd(MinimalTimer* timer);
 
 #endif // !MINIMAL_UTIL_H

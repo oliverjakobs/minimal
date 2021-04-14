@@ -3,6 +3,11 @@
 
 #include "MinimalUtil.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
+
 typedef struct
 {
     HWND        handle;
@@ -15,11 +20,13 @@ typedef struct
     int should_close;
 } MinimalWindow;
 
-int MinimalCreateWindow(MinimalWindow* window, LPCWSTR title, int width, int height);
+int MinimalCreateWindow(MinimalWindow* window, const char* title, int width, int height);
 int MinimalDestroyWindow(MinimalWindow* window);
 
 void MinimalPollEvent(MinimalWindow* window);
 void MinimalSwapBuffer(MinimalWindow* window);
+
+void MinimalSetWindowTitle(MinimalWindow* window, const char* str);
 
 int MinimalShouldClose(const MinimalWindow* window);
 void MinimalCloseWindow(MinimalWindow* window);

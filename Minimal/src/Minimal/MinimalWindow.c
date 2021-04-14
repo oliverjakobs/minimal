@@ -111,7 +111,7 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-int MinimalCreateWindow(MinimalWindow* wnd, LPCWSTR title, int width, int height)
+int MinimalCreateWindow(MinimalWindow* wnd, const char* title, int width, int height)
 {
     WCHAR CLASS_NAME[] = L"MinimalWindowClass";
     wnd->instance = GetModuleHandleW(NULL);
@@ -135,16 +135,15 @@ int MinimalCreateWindow(MinimalWindow* wnd, LPCWSTR title, int width, int height
 
     int x = CW_USEDEFAULT, y = CW_USEDEFAULT;
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
-    wnd->handle = CreateWindowExW(0, CLASS_NAME, title, style, x, y, width, height, 0, 0, wnd->instance, 0);
+    wnd->handle = CreateWindowExW(0, CLASS_NAME, NULL, style, x, y, width, height, 0, 0, wnd->instance, 0);
     wnd->should_close = 0;
+
+    MinimalSetWindowTitle(wnd, title);
+    SetPropW(wnd->handle, L"Minimal", wnd);
 
     memset(wnd->key_state, MINIMAL_RELEASE, sizeof(wnd->key_state));
 
-    SetPropW(wnd->handle, L"Minimal", wnd);
-
-    MinimalCreateRenderContex(wnd);
-
-    return MINIMAL_OK;
+    return MinimalCreateRenderContex(wnd);
 }
 
 int MinimalDestroyWindow(MinimalWindow* wnd)
@@ -175,7 +174,7 @@ void MinimalPollEvent(MinimalWindow* wnd)
     while (PeekMessageW(&msg, wnd->handle, 0, 0, PM_REMOVE))
     {
         if (msg.message == WM_QUIT)
-            wnd->should_close = 0;
+            MinimalCloseWindow(wnd);
 
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
@@ -185,6 +184,11 @@ void MinimalPollEvent(MinimalWindow* wnd)
 void MinimalSwapBuffer(MinimalWindow* wnd)
 {
     SwapBuffers(wnd->device_context);
+}
+
+void MinimalSetWindowTitle(MinimalWindow* wnd, const char* str)
+{
+    SetWindowTextA(wnd->handle, str);
 }
 
 int MinimalShouldClose(const MinimalWindow* wnd)    { return wnd->should_close; }

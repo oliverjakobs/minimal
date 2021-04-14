@@ -55,29 +55,39 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  *                               Timer
  * -----------------------------------------------------------------------------------
  */
+
+
 void MinimalTimerReset(MinimalTimer* timer)
 {
-    timer->seconds = 0.0;
     timer->frames = 0;
     timer->fps = 0;
 
-    timer->deltatime = 0.0;
-    timer->lastframe = 0.0;
+    timer->deltatime = 0;
+    timer->start = 0;
 }
 
-void MinimalTimerStart(MinimalTimer* timer, double seconds)
+double MinimalClockToMS(clock_t ticks)
 {
-    timer->deltatime = seconds - timer->lastframe;
-    timer->lastframe = seconds;
+    // units/(units/time) => time (seconds) * 1000 = milliseconds
+    return (ticks / (double)CLOCKS_PER_SEC) * 1000.0;
 }
 
-void MinimalTimerEnd(MinimalTimer* timer, double seconds)
+void MinimalTimerStart(MinimalTimer* timer)
 {
+    timer->start = clock();
+}
+
+void MinimalTimerEnd(MinimalTimer* timer)
+{
+    clock_t end = clock();
+
+    timer->deltatime += end - timer->start;
     timer->frames++;
-    if ((seconds - timer->seconds) > 1.0)
+
+    if (MinimalClockToMS(timer->deltatime) > 1000.0) //every second
     {
-        timer->seconds += 1.0;
-        timer->fps = timer->frames;
+        timer->fps = (double)timer->frames; //more stable
         timer->frames = 0;
+        timer->deltatime -= CLOCKS_PER_SEC;
     }
 }
