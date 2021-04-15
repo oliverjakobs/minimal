@@ -81,6 +81,31 @@ static int MinimalDestroyRenderContext(MinimalWindow* wnd)
     return status;
 }
 
+static UINT MinimalGetKeyMods()
+{
+    UINT mods = 0;
+    if (GetKeyState(VK_SHIFT) & 0x8000)                         mods |= MINIMAL_KEY_MOD_SHIFT;
+    if (GetKeyState(VK_CONTROL) & 0x8000)                       mods |= MINIMAL_KEY_MOD_CONTROL;
+    if (GetKeyState(VK_MENU) & 0x8000)                          mods |= MINIMAL_KEY_MOD_ALT;
+    if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & 0x8000) mods |= MINIMAL_KEY_MOD_SUPER;
+    if (GetKeyState(VK_CAPITAL) & 1)                            mods |= MINIMAL_KEY_MOD_CAPS_LOCK;
+    if (GetKeyState(VK_NUMLOCK) & 1)                            mods |= MINIMAL_KEY_MOD_NUM_LOCK;
+    return mods;
+}
+
+void MinimalUpdateKey(MinimalWindow* window, UINT keycode, UINT scancode, MinimalInputAction action, UINT mods)
+{
+    if (MinimalKeycodeValid(keycode))
+    {
+        MinimalInputAction prev = window->key_state[keycode];
+        if (action == MINIMAL_PRESS && prev == MINIMAL_RELEASE)     window->key_state[keycode] = MINIMAL_PRESS;
+        else if (action == MINIMAL_PRESS && prev == MINIMAL_PRESS)  window->key_state[keycode] = MINIMAL_REPEAT;
+        else if (action == MINIMAL_RELEASE)                         window->key_state[keycode] = MINIMAL_RELEASE;
+    }
+
+    if (window->callbacks.key) window->callbacks.key(window, keycode, scancode, action, mods);
+}
+
 static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     MinimalWindow* window = GetPropW(hwnd, L"Minimal");
@@ -100,11 +125,11 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     case WM_SYSKEYUP:
     {
         const UINT scancode = (lParam >> 16) & 0x1ff;
-        const UINT key = MinimalTranslateKey(scancode);
-        const MinimalKeyState action = ((lParam >> 31) & 1) ? MINIMAL_RELEASE : MINIMAL_PRESS;
+        const UINT keycode = MinimalTranslateKey(scancode);
+        const MinimalInputAction action = ((lParam >> 31) & 1) ? MINIMAL_RELEASE : MINIMAL_PRESS;
         const UINT mods = MinimalGetKeyMods();
 
-        MinimalUpdateKey(window, key, scancode, action, mods);
+        MinimalUpdateKey(window, keycode, scancode, action, mods);
         return 0;
     }
     default: return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -142,6 +167,14 @@ int MinimalCreateWindow(MinimalWindow* wnd, const char* title, int width, int he
     SetPropW(wnd->handle, L"Minimal", wnd);
 
     memset(wnd->key_state, MINIMAL_RELEASE, sizeof(wnd->key_state));
+
+    wnd->callbacks.size = NULL;
+    wnd->callbacks.close = NULL;
+    wnd->callbacks.key = NULL;
+    wnd->callbacks.character = NULL;
+    wnd->callbacks.mouse_button = NULL;
+    wnd->callbacks.scroll = NULL;
+    wnd->callbacks.cursor_pos = NULL;
 
     return MinimalCreateRenderContex(wnd);
 }
@@ -189,6 +222,18 @@ void MinimalSwapBuffer(MinimalWindow* wnd)
 void MinimalSetWindowTitle(MinimalWindow* wnd, const char* str)
 {
     SetWindowTextA(wnd->handle, str);
+}
+
+long MinimalGetWindowWidth(const MinimalWindow* wnd)
+{
+    RECT rect;
+    return GetWindowRect(wnd->handle, &rect) ? rect.right - rect.left : 0;
+}
+
+long MinimalGetWindowHeigth(const MinimalWindow* wnd)
+{
+    RECT rect;
+    return GetWindowRect(wnd->handle, &rect) ? rect.bottom - rect.top : 0;
 }
 
 int MinimalShouldClose(const MinimalWindow* wnd)    { return wnd->should_close; }

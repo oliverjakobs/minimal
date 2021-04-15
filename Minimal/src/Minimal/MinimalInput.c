@@ -1,16 +1,6 @@
 #include "MinimalInput.h"
 
-UINT MinimalGetKeyMods()
-{
-    UINT mods = 0;
-    if (GetKeyState(VK_SHIFT) & 0x8000)                         mods |= MINIMAL_KEY_MOD_SHIFT;
-    if (GetKeyState(VK_CONTROL) & 0x8000)                       mods |= MINIMAL_KEY_MOD_CONTROL;
-    if (GetKeyState(VK_MENU) & 0x8000)                          mods |= MINIMAL_KEY_MOD_ALT;
-    if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & 0x8000) mods |= MINIMAL_KEY_MOD_SUPER;
-    if (GetKeyState(VK_CAPITAL) & 1)                            mods |= MINIMAL_KEY_MOD_CAPS_LOCK;
-    if (GetKeyState(VK_NUMLOCK) & 1)                            mods |= MINIMAL_KEY_MOD_NUM_LOCK;
-    return mods;
-}
+#include "MinimalWindow.h"
 
 static int minimal_key_table[512];
 
@@ -128,37 +118,42 @@ void MinimalCreateKeyTable()
     minimal_key_table[0x04A] = MINIMAL_KEY_NP_SUBTRACT;
 }
 
-int MinimalTranslateKey(UINT scancode)
+int MinimalTranslateKey(unsigned int scancode)
 {
     return minimal_key_table[scancode];
 }
 
-static int MinimalKeyValid(UINT keycode)
+int MinimalKeycodeValid(unsigned int keycode)
 {
     return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
-void MinimalUpdateKey(MinimalWindow* window, UINT key, UINT scancode, MinimalKeyState action, UINT mods)
+int MinimalKeyPressed(MinimalWindow* window, unsigned int keycode)
 {
-    if (MinimalKeyValid(key))
-    {
-        MinimalKeyState prev = window->key_state[key];
-        if (action == MINIMAL_PRESS && prev == MINIMAL_RELEASE)     window->key_state[key] = MINIMAL_PRESS;
-        else if (action == MINIMAL_PRESS && prev == MINIMAL_PRESS)  window->key_state[key] = MINIMAL_REPEAT;
-        else if (action == MINIMAL_RELEASE)                         window->key_state[key] = MINIMAL_RELEASE;
-    }
-}
+    if (!MinimalKeycodeValid(keycode)) return 0;
 
-int MinimalKeyPressed(MinimalWindow* window, UINT keycode)
-{
-    if (!MinimalKeyValid(keycode)) return 0;
-
-    MinimalKeyState state = window->key_state[keycode];
+    MinimalInputAction state = window->key_state[keycode];
     return state == MINIMAL_PRESS || state == MINIMAL_REPEAT;
 }
 
-int MinimalKeyReleased(MinimalWindow* window, UINT keycode)
+int MinimalKeyReleased(MinimalWindow* window, unsigned int keycode)
 {
-    if (!MinimalKeyValid(keycode)) return 0;
+    if (!MinimalKeycodeValid(keycode)) return 0;
     return window->key_state[keycode] == MINIMAL_RELEASE;
+}
+
+void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y)
+{
+    POINT pos;
+    if (GetCursorPos(&pos))
+    {
+        ScreenToClient(window->handle, &pos);
+        if (x) *x = (float)pos.x;
+        if (y) *y = (float)pos.y;
+    }
+    else
+    {
+        if (x) *x = 0.0f;
+        if (y) *y = 0.0f;
+    }
 }

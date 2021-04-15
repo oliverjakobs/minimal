@@ -8,6 +8,7 @@
 #include "gjk.h"
 
 MinimalTimer timer;
+MinimalWindow window;
 
 mat4 view;
 
@@ -59,7 +60,7 @@ gjk_vec2 poly_verts[] =
 gjk_vec2 GetMousePos()
 {
     gjk_vec2 pos = { 0 };
-    // InputMousePosition(&pos.x, &pos.y);
+    MinimalGetCursorPos(&window, &pos.x, &pos.y);
 
     pos.x = (pos.x / 100.0f) - WIDTH * .5f;
     pos.y = HEIGHT - (pos.y / 100.0f) - HEIGHT * .5f;
@@ -143,6 +144,14 @@ void OnDestroy()
     GuiDestroy(&gui);
 }
 
+void OnUpdate(float deltatime)
+{
+    mouse = GetMousePos();
+    gjk_set_center(&triangle, mouse);
+
+    collision = gjk_collision(&triangle, &poly, simplex);
+}
+
 void OnRender()
 {
     Primitives2DStart(view.v);
@@ -185,7 +194,6 @@ void OnRenderDebug()
 
 int main()
 {
-    MinimalWindow window;
     MinimalCreateWindow(&window, "Minimal", SCREEN_WIDTH, SCREEN_HEIGHT);
 
     MinimalCreateKeyTable();
@@ -200,6 +208,8 @@ int main()
 
         if (MinimalKeyPressed(&window, MINIMAL_KEY_ESCAPE))
             MinimalCloseWindow(&window);
+
+        OnUpdate(timer.deltatime);
 
         OnRender();
         OnRenderDebug();

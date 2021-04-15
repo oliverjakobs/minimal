@@ -1,5 +1,7 @@
 #include "MinimalUtil.h"
 
+#include "MinimalWindow.h"
+
 /*
  * -----------------------------------------------------------------------------------
  *                               Debug Logging
@@ -56,7 +58,6 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  * -----------------------------------------------------------------------------------
  */
 
-
 void MinimalTimerReset(MinimalTimer* timer)
 {
     timer->frames = 0;
@@ -86,7 +87,7 @@ void MinimalTimerEnd(MinimalTimer* timer)
 
     if (MinimalClockToMS(timer->deltatime) > 1000.0) //every second
     {
-        timer->fps = (double)timer->frames; //more stable
+        timer->fps = timer->frames; //more stable
         timer->frames = 0;
         timer->deltatime -= CLOCKS_PER_SEC;
     }

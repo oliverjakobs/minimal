@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+typedef struct MinimalWindow MinimalWindow;
+
 /*
  * -----------------------------------------------------------------------------------
  *                               Debug Logging

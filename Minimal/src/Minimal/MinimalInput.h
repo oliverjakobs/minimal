@@ -1,16 +1,7 @@
 #ifndef MINIMAL_INPUT_H
 #define MINIMAL_INPUT_H
 
-#include "MinimalWindow.h"
-
-#define MINIMAL_KEY_MOD_SHIFT       0x0001
-#define MINIMAL_KEY_MOD_CONTROL     0x0002
-#define MINIMAL_KEY_MOD_ALT         0x0004
-#define MINIMAL_KEY_MOD_SUPER       0x0008
-#define MINIMAL_KEY_MOD_CAPS_LOCK   0x0010
-#define MINIMAL_KEY_MOD_NUM_LOCK    0x0020
-
-UINT MinimalGetKeyMods();
+#include "MinimalUtil.h"
 
 #define MINIMAL_KEY_UNKNOWN			-1
 
@@ -127,26 +118,37 @@ UINT MinimalGetKeyMods();
 #define MINIMAL_KEY_RIGHT_SHIFT		277
 #define MINIMAL_KEY_RIGHT_CONTROL	278
 #define MINIMAL_KEY_RIGHT_ALT		279
-#define MINIMAL_KEY_RIGHT_SUPER		280
+#define MINIMAL_KEY_RIGHT_SUPER     280
 
 #define MINIMAL_KEY_FIRST			MINIMAL_KEY_ESCAPE
 #define MINIMAL_KEY_LAST			MINIMAL_KEY_RIGHT_SUPER
 
+
+/* key mods */
+#define MINIMAL_KEY_MOD_SHIFT       0x0001
+#define MINIMAL_KEY_MOD_CONTROL     0x0002
+#define MINIMAL_KEY_MOD_ALT         0x0004
+#define MINIMAL_KEY_MOD_SUPER       0x0008
+#define MINIMAL_KEY_MOD_CAPS_LOCK   0x0010
+#define MINIMAL_KEY_MOD_NUM_LOCK    0x0020
+
 void MinimalCreateKeyTable();
 
 /* tanslate win32 virtual key codes to minimal key codes */
-int MinimalTranslateKey(UINT scancode);
+int MinimalTranslateKey(unsigned int scancode);
+
+int MinimalKeycodeValid(unsigned int keycode);
 
 typedef enum
 {
     MINIMAL_RELEASE = 0,
     MINIMAL_PRESS = 1,
     MINIMAL_REPEAT = 2
-} MinimalKeyState;
+} MinimalInputAction;
 
-void MinimalUpdateKey(MinimalWindow* window, UINT key, UINT scancode, MinimalKeyState action, UINT mods);
+int MinimalKeyPressed(MinimalWindow* window, unsigned int keycode);
+int MinimalKeyReleased(MinimalWindow* window, unsigned int  keycode);
 
-int MinimalKeyPressed(MinimalWindow* window, UINT keycode);
-int MinimalKeyReleased(MinimalWindow* window, UINT keycode);
+void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y);
 
 #endif // !MINIMAL_INPUT_H
