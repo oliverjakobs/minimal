@@ -118,28 +118,45 @@ void MinimalCreateKeyTable()
     minimal_key_table[0x04A] = MINIMAL_KEY_NP_SUBTRACT;
 }
 
-int MinimalTranslateKey(unsigned int scancode)
+uint32_t MinimalTranslateKey(uint32_t scancode)
 {
     return minimal_key_table[scancode];
 }
 
-int MinimalKeycodeValid(unsigned int keycode)
+uint8_t MinimalKeycodeValid(uint32_t keycode)
 {
     return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
-int MinimalKeyPressed(MinimalWindow* window, unsigned int keycode)
+uint8_t MinimalMouseButtonValid(uint32_t buttoncode)
+{
+    return buttoncode >= MINIMAL_MOUSE_BUTTON_1 && buttoncode <= MINIMAL_MOUSE_BUTTON_LAST;
+}
+
+uint8_t MinimalKeyPressed(MinimalWindow* window, uint32_t keycode)
 {
     if (!MinimalKeycodeValid(keycode)) return 0;
 
-    MinimalInputAction state = window->key_state[keycode];
+    uint8_t state = window->key_state[keycode];
     return state == MINIMAL_PRESS || state == MINIMAL_REPEAT;
 }
 
-int MinimalKeyReleased(MinimalWindow* window, unsigned int keycode)
+uint8_t MinimalKeyReleased(MinimalWindow* window, uint32_t keycode)
 {
     if (!MinimalKeycodeValid(keycode)) return 0;
     return window->key_state[keycode] == MINIMAL_RELEASE;
+}
+
+uint8_t MinimalMouseButtonPressed(MinimalWindow* window, uint32_t button)
+{
+    if (!MinimalMouseButtonValid(button)) return 0;
+    return window->mouse_buttons[button] == MINIMAL_PRESS;
+}
+
+uint8_t MinimalMouseButtonReleased(MinimalWindow* window, uint32_t button)
+{
+    if (!MinimalMouseButtonValid(button)) return 0;
+    return window->mouse_buttons[button] == MINIMAL_RELEASE;
 }
 
 void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y)

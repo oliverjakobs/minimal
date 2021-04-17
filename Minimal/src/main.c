@@ -86,7 +86,7 @@ void RenderPoly(gjk_shape* shape, IgnisColorRGBA color)
 }
 
 
-static void MinimalIgnisErrorCallback(ignisErrorLevel level, const char* desc)
+static void IgnisErrorCallback(ignisErrorLevel level, const char* desc)
 {
     switch (level)
     {
@@ -99,7 +99,7 @@ static void MinimalIgnisErrorCallback(ignisErrorLevel level, const char* desc)
 int OnInit()
 {
     /* ingis initialization */
-    ignisSetErrorCallback(MinimalIgnisErrorCallback);
+    ignisSetErrorCallback(IgnisErrorCallback);
 
     if (!ignisInit(0))
     {
@@ -192,11 +192,30 @@ void OnRenderDebug()
     FontRendererFlush();
 }
 
+void KeyCallback(MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods)
+{
+    if (action == MINIMAL_PRESS)
+        MINIMAL_TRACE("KeyPressed: %d, %d", keycode, scancode);
+    else
+        MINIMAL_TRACE("KeyReleased : %d, %d", keycode, scancode);
+}
+
+void MouseButtonCallback(MinimalWindow* wnd, UINT button, UINT action, UINT mods)
+{
+    if (action == MINIMAL_PRESS)
+        MINIMAL_TRACE("ButtonPressed: %d", button);
+    else
+        MINIMAL_TRACE("ButtonReleased : %d", button);
+}
+
 int main()
 {
-    MinimalCreateWindow(&window, "Minimal", SCREEN_WIDTH, SCREEN_HEIGHT);
+    MinimalCreateWindow(&window, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT);
 
     MinimalCreateKeyTable();
+
+    MinimalSetKeyCallback(&window, KeyCallback);
+    MinimalSetMButtonCallback(&window, MouseButtonCallback);
 
     if (!OnInit()) return -1;
 

@@ -9,6 +9,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdarg.h>
 
 typedef struct MinimalWindow MinimalWindow;
@@ -56,8 +57,8 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
 
 typedef struct
 {
-    int frames;
-    int fps;
+    uint32_t frames;
+    uint32_t fps;
 
     clock_t deltatime;
     clock_t start;

@@ -123,6 +123,20 @@
 #define MINIMAL_KEY_FIRST			MINIMAL_KEY_ESCAPE
 #define MINIMAL_KEY_LAST			MINIMAL_KEY_RIGHT_SUPER
 
+/* mouse buttons */
+#define MINIMAL_MOUSE_BUTTON_UNKNOWN	-1
+
+#define MINIMAL_MOUSE_BUTTON_1			0
+#define MINIMAL_MOUSE_BUTTON_2			1
+#define MINIMAL_MOUSE_BUTTON_3			2
+#define MINIMAL_MOUSE_BUTTON_4			3
+#define MINIMAL_MOUSE_BUTTON_5			4
+
+#define MINIMAL_MOUSE_BUTTON_LAST		MINIMAL_MOUSE_BUTTON_5
+
+#define MINIMAL_MOUSE_BUTTON_LEFT		MINIMAL_MOUSE_BUTTON_1
+#define MINIMAL_MOUSE_BUTTON_RIGHT		MINIMAL_MOUSE_BUTTON_2
+#define MINIMAL_MOUSE_BUTTON_MIDDLE		MINIMAL_MOUSE_BUTTON_3
 
 /* key mods */
 #define MINIMAL_KEY_MOD_SHIFT       0x0001
@@ -132,22 +146,24 @@
 #define MINIMAL_KEY_MOD_CAPS_LOCK   0x0010
 #define MINIMAL_KEY_MOD_NUM_LOCK    0x0020
 
+/* input action */
+#define MINIMAL_RELEASE 0
+#define MINIMAL_PRESS   1
+#define MINIMAL_REPEAT  2
+
 void MinimalCreateKeyTable();
 
 /* tanslate win32 virtual key codes to minimal key codes */
-int MinimalTranslateKey(unsigned int scancode);
+uint32_t MinimalTranslateKey(uint32_t scancode);
 
-int MinimalKeycodeValid(unsigned int keycode);
+uint8_t MinimalKeycodeValid(uint32_t keycode);
+uint8_t MinimalMouseButtonValid(uint32_t buttoncode);
 
-typedef enum
-{
-    MINIMAL_RELEASE = 0,
-    MINIMAL_PRESS = 1,
-    MINIMAL_REPEAT = 2
-} MinimalInputAction;
+uint8_t MinimalKeyPressed(MinimalWindow* window, uint32_t keycode);
+uint8_t MinimalKeyReleased(MinimalWindow* window, uint32_t  keycode);
 
-int MinimalKeyPressed(MinimalWindow* window, unsigned int keycode);
-int MinimalKeyReleased(MinimalWindow* window, unsigned int  keycode);
+uint8_t MinimalMouseButtonPressed(MinimalWindow* window, uint32_t button);
+uint8_t MinimalMouseButtonReleased(MinimalWindow* window, uint32_t  button);
 
 void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y);
 

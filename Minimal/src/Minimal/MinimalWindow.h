@@ -2,11 +2,20 @@
 #define MINIMAL_WINDOW_H
 
 #include "MinimalUtil.h"
+#include "MinimalInput.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <Windows.h>
+
+typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, long w, long h);
+typedef void (*MinimalCloseCB)      (MinimalWindow* wnd);
+typedef void (*MinimalKeyCB)        (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
+typedef void (*MinimalCharCB)       (MinimalWindow* wnd, UINT keycode);
+typedef void (*MinimalMButtonCB)    (MinimalWindow* wnd, UINT keycode, UINT action, UINT mods);
+typedef void (*MinimalScrollCB)     (MinimalWindow* wnd, float x_offset, float y_offset);
+typedef void (*MinimalCursorPosCB)  (MinimalWindow* wnd, float x_pos, float y_pos);
 
 struct MinimalWindow
 {
@@ -15,35 +24,44 @@ struct MinimalWindow
     HDC         device_context;
     HGLRC       render_context;
 
-    int key_state[280];
+    uint8_t key_state[MINIMAL_KEY_LAST + 1];
+    uint8_t mouse_buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
 
-    int should_close;
+    uint8_t should_close;
 
     /* callbacks */
     struct
     {
-        void (*size)            (MinimalWindow* wnd, long w, long h);
-        void (*close)           (MinimalWindow* wnd);
-        void (*key)             (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
-        void (*character)       (MinimalWindow* wnd, UINT keycode);
-        void (*mouse_button)    (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
-        void (*scroll)          (MinimalWindow* wnd, float x_offset, float y_offset);
-        void (*cursor_pos)      (MinimalWindow* wnd, float x_pos, float y_pos);
+        MinimalSizeCB       size;
+        MinimalCloseCB      close;
+        MinimalKeyCB        key;
+        MinimalCharCB       character;
+        MinimalMButtonCB    m_button;
+        MinimalScrollCB     scroll;
+        MinimalCursorPosCB  cursor_pos;
     } callbacks;
 };
 
-int MinimalCreateWindow(MinimalWindow* window, const char* title, int width, int height);
-int MinimalDestroyWindow(MinimalWindow* window);
+uint8_t MinimalCreateWindow(MinimalWindow* window, const char* title, uint32_t width, uint32_t height);
+uint8_t MinimalDestroyWindow(MinimalWindow* window);
 
 void MinimalPollEvent(MinimalWindow* window);
 void MinimalSwapBuffer(MinimalWindow* window);
 
 void MinimalSetWindowTitle(MinimalWindow* window, const char* str);
 
-long MinimalGetWindowWidth(const MinimalWindow* window);
-long MinimalGetWindowHeigth(const MinimalWindow* window);
+uint32_t MinimalGetWindowWidth(const MinimalWindow* window);
+uint32_t MinimalGetWindowHeigth(const MinimalWindow* window);
 
-int MinimalShouldClose(const MinimalWindow* window);
+uint8_t MinimalShouldClose(const MinimalWindow* window);
 void MinimalCloseWindow(MinimalWindow* window);
+
+void MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size);
+void MinimalSetCloseCallback(MinimalWindow* window, MinimalCloseCB close);
+void MinimalSetKeyCallback(MinimalWindow* window, MinimalKeyCB key);
+void MinimalSetCharCallback(MinimalWindow* window, MinimalCharCB character);
+void MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button);
+void MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll);
+void MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos);
 
 #endif // !MINIMAL_WINDOW_H
