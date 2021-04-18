@@ -161,16 +161,9 @@ uint8_t MinimalMouseButtonReleased(MinimalWindow* window, uint32_t button)
 
 void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y)
 {
-    POINT pos;
-    if (GetCursorPos(&pos))
-    {
-        ScreenToClient(window->handle, &pos);
-        if (x) *x = (float)pos.x;
-        if (y) *y = (float)pos.y;
-    }
-    else
-    {
-        if (x) *x = 0.0f;
-        if (y) *y = 0.0f;
-    }
+    POINT pos = { 0 };
+    if (GetCursorPos(&pos)) ScreenToClient(window->handle, &pos);
+
+    if (x) *x = (float)pos.x;
+    if (y) *y = (float)pos.y;
 }

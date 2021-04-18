@@ -60,12 +60,20 @@ typedef struct
     uint32_t frames;
     uint32_t fps;
 
-    clock_t deltatime;
-    clock_t start;
+    double seconds;
+    double deltatime;
+    double lastframe;
+
+    uint64_t    frequency;
+    uint64_t    offset;
 } MinimalTimer;
 
+void MinimalTimerInit(MinimalTimer* timer);
 void MinimalTimerReset(MinimalTimer* timer);
+
 void MinimalTimerStart(MinimalTimer* timer);
 void MinimalTimerEnd(MinimalTimer* timer);
+
+double MinimalGetTime(const MinimalTimer* timer);
 
 #endif // !MINIMAL_UTIL_H

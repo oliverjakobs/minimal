@@ -129,7 +129,7 @@ int OnInit()
     gjk_poly(&triangle, triangle_verts, 3);
     gjk_poly(&poly, poly_verts, 6);
 
-    MinimalTimerReset(&timer);
+    MinimalTimerInit(&timer);
 
     return 1;
 }

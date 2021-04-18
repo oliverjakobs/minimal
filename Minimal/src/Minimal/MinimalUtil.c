@@ -58,37 +58,54 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  * -----------------------------------------------------------------------------------
  */
 
+static uint64_t MinimalTimerGetValue(const MinimalTimer* timer)
+{
+    uint64_t value;
+    QueryPerformanceCounter((LARGE_INTEGER*)&value);
+    return value;
+}
+
+void MinimalTimerInit(MinimalTimer* timer)
+{
+    uint64_t frequency;
+    if (!QueryPerformanceFrequency((LARGE_INTEGER*)&frequency))
+        MINIMAL_WARN("High-resolution performance counter is not supported");
+
+    timer->frequency = frequency;
+    timer->offset = MinimalTimerGetValue(timer);
+    MinimalTimerReset(timer);
+}
+
 void MinimalTimerReset(MinimalTimer* timer)
 {
+    timer->seconds = 0.0;
     timer->frames = 0;
     timer->fps = 0;
 
-    timer->deltatime = 0;
-    timer->start = 0;
-}
-
-double MinimalClockToMS(clock_t ticks)
-{
-    // units/(units/time) => time (seconds) * 1000 = milliseconds
-    return (ticks / (double)CLOCKS_PER_SEC) * 1000.0;
+    timer->deltatime = 0.0;
+    timer->lastframe = 0.0;
 }
 
 void MinimalTimerStart(MinimalTimer* timer)
 {
-    timer->start = clock();
+    double seconds = MinimalGetTime(timer);
+    timer->deltatime = seconds - timer->lastframe;
+    timer->lastframe = seconds;
 }
 
 void MinimalTimerEnd(MinimalTimer* timer)
 {
-    clock_t end = clock();
-
-    timer->deltatime += end - timer->start;
+    double seconds = MinimalGetTime(timer);
     timer->frames++;
-
-    if (MinimalClockToMS(timer->deltatime) > 1000.0) //every second
+    if ((seconds - timer->seconds) > 1.0)
     {
-        timer->fps = timer->frames; //more stable
+        timer->seconds += 1.0;
+        timer->fps = timer->frames;
         timer->frames = 0;
-        timer->deltatime -= CLOCKS_PER_SEC;
     }
+}
+
+double MinimalGetTime(const MinimalTimer* timer)
+{
+    return (double)(MinimalTimerGetValue(timer) - timer->offset) / timer->frequency;
 }
