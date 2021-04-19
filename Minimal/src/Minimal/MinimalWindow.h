@@ -8,6 +8,8 @@
 #endif
 #include <Windows.h>
 
+#define MINIMAL_WNDCLASSNAME L"MINIMALWNDCLASS"
+
 typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, long w, long h);
 typedef void (*MinimalCloseCB)      (MinimalWindow* wnd);
 typedef void (*MinimalKeyCB)        (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
@@ -40,6 +42,12 @@ struct MinimalWindow
         MinimalCursorPosCB  cursor_pos;
     } callbacks;
 };
+
+uint8_t MinimalRegisterWindowClass();
+uint8_t MinimalUnregisterWindowClass();
+
+uint8_t MinimalCreateHelperWindow();
+HWND MinimalGetHelperWindow();
 
 uint8_t MinimalCreateWindow(MinimalWindow* window, const char* title, uint32_t width, uint32_t height);
 uint8_t MinimalDestroyWindow(MinimalWindow* window);

@@ -162,6 +162,7 @@
     <ClCompile Include="src\math\vec3.c" />
     <ClCompile Include="src\Minimal\Minimal.c" />
     <ClCompile Include="src\Minimal\MinimalUtil.c" />
+    <ClCompile Include="src\Minimal\MinimalWGL.c" />
     <ClCompile Include="src\Minimal\MinimalWindow.c" />
     <ClCompile Include="src\toolbox\tb_array.c" />
     <ClCompile Include="src\toolbox\tb_file.c" />
@@ -202,6 +203,7 @@
     <ClInclude Include="src\math\vec3.h" />
     <ClInclude Include="src\Minimal\Minimal.h" />
     <ClInclude Include="src\Minimal\MinimalUtil.h" />
+    <ClInclude Include="src\Minimal\MinimalWGL.h" />
     <ClInclude Include="src\Minimal\MinimalWindow.h" />
     <ClInclude Include="src\toolbox\tb_array.h" />
     <ClInclude Include="src\toolbox\tb_file.h" />

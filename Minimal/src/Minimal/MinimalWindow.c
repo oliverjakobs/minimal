@@ -330,17 +330,14 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t width, uint32_t height)
+uint8_t MinimalRegisterWindowClass()
 {
-    WCHAR CLASS_NAME[] = L"MinimalWindowClass";
-    wnd->instance = GetModuleHandleW(NULL);
-
     WNDCLASSEXW wnd_class = { 0 };
     wnd_class.cbSize = sizeof(WNDCLASSEXW);
-    wnd_class.hInstance = wnd->instance;
+    wnd_class.hInstance = GetModuleHandleW(NULL);
     wnd_class.lpfnWndProc = MinimalWindowProc;
     wnd_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    wnd_class.lpszClassName = CLASS_NAME;
+    wnd_class.lpszClassName = MINIMAL_WNDCLASSNAME;
     wnd_class.lpszMenuName = NULL;
     wnd_class.hIcon = LoadIconW(NULL, IDI_APPLICATION);
     wnd_class.hIconSm = LoadIconW(NULL, IDI_APPLICATION);
@@ -351,6 +348,52 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t widt
         MINIMAL_ERROR("Failed to register WindowClass");
         return MINIMAL_FAIL;
     }
+    return MINIMAL_OK;
+}
+
+uint8_t MinimalUnregisterWindowClass()
+{
+    if (!UnregisterClassW(L"MinimalWindowClass", GetModuleHandleW(NULL)))
+    {
+        MINIMAL_ERROR("Failed to unregister WindowClass");
+        return MINIMAL_FAIL;
+    }
+    return MINIMAL_OK;
+}
+
+static HWND _minimal_helper_hwnd;
+
+uint8_t MinimalCreateHelperWindow()
+{
+    DWORD ex_style = WS_EX_OVERLAPPEDWINDOW;
+    DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+    _minimal_helper_hwnd = CreateWindowExW(ex_style, MINIMAL_WNDCLASSNAME, NULL, style,
+            0, 0, 1, 1, 0, 0, GetModuleHandleW(NULL), 0);
+
+    if (!_minimal_helper_hwnd)
+    {
+        MINIMAL_ERROR("Failed to create helper window");
+        return MINIMAL_FAIL;
+    }
+
+    MSG msg;
+    while (PeekMessageW(&msg, _minimal_helper_hwnd, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+
+    return MINIMAL_OK;
+}
+
+HWND MinimalGetHelperWindow()
+{
+    return _minimal_helper_hwnd;
+}
+
+uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t width, uint32_t height)
+{
+    wnd->instance = GetModuleHandleW(NULL);
 
     RECT rect = { .right = width, .bottom = height };
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
@@ -359,7 +402,7 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t widt
     int x = CW_USEDEFAULT, y = CW_USEDEFAULT;
     int w = rect.right - rect.left, h = rect.bottom - rect.top;
 
-    wnd->handle = CreateWindowExW(0, CLASS_NAME, NULL, style, x, y, w, h, 0, 0, wnd->instance, 0);
+    wnd->handle = CreateWindowExW(0, MINIMAL_WNDCLASSNAME, NULL, style, x, y, w, h, 0, 0, wnd->instance, 0);
     wnd->should_close = 0;
 
     MinimalSetWindowTitle(wnd, title);
@@ -389,12 +432,6 @@ uint8_t MinimalDestroyWindow(MinimalWindow* wnd)
         status = MINIMAL_FAIL;
     }
 
-    if (!UnregisterClassW(L"MinimalWindowClass", wnd->instance))
-    {
-        MINIMAL_ERROR("Failed to unregister WindowClass");
-        status = MINIMAL_FAIL;
-    }
-
     wnd->handle = NULL;
     wnd->instance = NULL;
 
@@ -406,8 +443,7 @@ void MinimalPollEvent(MinimalWindow* wnd)
     MSG msg;
     while (PeekMessageW(&msg, wnd->handle, 0, 0, PM_REMOVE))
     {
-        if (msg.message == WM_QUIT)
-            MinimalCloseWindow(wnd);
+        if (msg.message == WM_QUIT) MinimalCloseWindow(wnd);
 
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
