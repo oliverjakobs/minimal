@@ -1,6 +1,6 @@
 #include "MinimalInput.h"
 
-#include "MinimalWindow.h"
+#include "Minimal.h"
 
 static int minimal_key_table[512];
 
@@ -128,39 +128,53 @@ uint8_t MinimalKeycodeValid(uint32_t keycode)
     return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
+static uint8_t MinimalGetKeyState(uint32_t keycode)
+{
+    MinimalWindow* window = MinimalGetCurrentContext();
+    return window ? window->key_state[keycode] : MINIMAL_RELEASE;
+}
+
 uint8_t MinimalMouseButtonValid(uint32_t buttoncode)
 {
     return buttoncode >= MINIMAL_MOUSE_BUTTON_1 && buttoncode <= MINIMAL_MOUSE_BUTTON_LAST;
 }
 
-uint8_t MinimalKeyPressed(MinimalWindow* window, uint32_t keycode)
+static uint8_t MinimalGetMouseButtonState(uint32_t button)
+{
+    MinimalWindow* window = MinimalGetCurrentContext();
+    return window ? window->mouse_buttons[button] : MINIMAL_RELEASE;
+}
+
+uint8_t MinimalKeyPressed(uint32_t keycode)
 {
     if (!MinimalKeycodeValid(keycode)) return 0;
-
-    uint8_t state = window->key_state[keycode];
+    uint8_t state = MinimalGetKeyState(keycode);
     return state == MINIMAL_PRESS || state == MINIMAL_REPEAT;
 }
 
-uint8_t MinimalKeyReleased(MinimalWindow* window, uint32_t keycode)
+uint8_t MinimalKeyReleased(uint32_t keycode)
 {
     if (!MinimalKeycodeValid(keycode)) return 0;
-    return window->key_state[keycode] == MINIMAL_RELEASE;
+    return MinimalGetKeyState(keycode) == MINIMAL_RELEASE;
 }
 
-uint8_t MinimalMouseButtonPressed(MinimalWindow* window, uint32_t button)
+uint8_t MinimalMouseButtonPressed(uint32_t button)
 {
     if (!MinimalMouseButtonValid(button)) return 0;
-    return window->mouse_buttons[button] == MINIMAL_PRESS;
+    return MinimalGetMouseButtonState(button) == MINIMAL_PRESS;
 }
 
-uint8_t MinimalMouseButtonReleased(MinimalWindow* window, uint32_t button)
+uint8_t MinimalMouseButtonReleased(uint32_t button)
 {
     if (!MinimalMouseButtonValid(button)) return 0;
-    return window->mouse_buttons[button] == MINIMAL_RELEASE;
+    return MinimalGetMouseButtonState(button) == MINIMAL_RELEASE;
 }
 
-void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y)
+void MinimalGetCursorPos(float* x, float* y)
 {
+    MinimalWindow* window = MinimalGetCurrentContext();
+    if (!window) return;
+
     POINT pos = { 0 };
     if (GetCursorPos(&pos)) ScreenToClient(window->handle, &pos);
 

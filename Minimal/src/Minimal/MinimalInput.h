@@ -159,12 +159,12 @@ uint32_t MinimalTranslateKey(uint32_t scancode);
 uint8_t MinimalKeycodeValid(uint32_t keycode);
 uint8_t MinimalMouseButtonValid(uint32_t buttoncode);
 
-uint8_t MinimalKeyPressed(MinimalWindow* window, uint32_t keycode);
-uint8_t MinimalKeyReleased(MinimalWindow* window, uint32_t  keycode);
+uint8_t MinimalKeyPressed(uint32_t keycode);
+uint8_t MinimalKeyReleased(uint32_t  keycode);
 
-uint8_t MinimalMouseButtonPressed(MinimalWindow* window, uint32_t button);
-uint8_t MinimalMouseButtonReleased(MinimalWindow* window, uint32_t  button);
+uint8_t MinimalMouseButtonPressed(uint32_t button);
+uint8_t MinimalMouseButtonReleased(uint32_t  button);
 
-void MinimalGetCursorPos(MinimalWindow* window, float* x, float* y);
+void MinimalGetCursorPos(float* x, float* y);
 
 #endif // !MINIMAL_INPUT_H

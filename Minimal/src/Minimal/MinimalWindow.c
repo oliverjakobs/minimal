@@ -441,37 +441,10 @@ uint32_t MinimalGetWindowHeigth(const MinimalWindow* wnd)
 uint8_t MinimalShouldClose(const MinimalWindow* wnd)    { return wnd->should_close; }
 void MinimalCloseWindow(MinimalWindow* wnd)             { wnd->should_close = 1; }
 
-void MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size)
-{
-    window->callbacks.size = size;
-}
-
-void MinimalSetCloseCallback(MinimalWindow* window, MinimalCloseCB close)
-{
-    window->callbacks.close = close;
-}
-
-void MinimalSetKeyCallback(MinimalWindow* window, MinimalKeyCB key)
-{
-    window->callbacks.key = key;
-}
-
-void MinimalSetCharCallback(MinimalWindow* window, MinimalCharCB character)
-{
-    window->callbacks.character = character;
-}
-
-void MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button)
-{
-    window->callbacks.m_button = m_button;
-}
-
-void MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll)
-{
-    window->callbacks.scroll = scroll;
-}
-
-void MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos)
-{
-    window->callbacks.cursor_pos = cursor_pos;
-}
+void MinimalSetSizeCallback(MinimalWindow* wnd, MinimalSizeCB cb)           { wnd->callbacks.size = cb; }
+void MinimalSetCloseCallback(MinimalWindow* wnd, MinimalCloseCB cb)         { wnd->callbacks.close = cb; }
+void MinimalSetKeyCallback(MinimalWindow* wnd, MinimalKeyCB cb)             { wnd->callbacks.key = cb; }
+void MinimalSetCharCallback(MinimalWindow* wnd, MinimalCharCB cb)           { wnd->callbacks.character = cb; }
+void MinimalSetMButtonCallback(MinimalWindow* wnd, MinimalMButtonCB cb)     { wnd->callbacks.m_button = cb; }
+void MinimalSetScrollCallback(MinimalWindow* wnd, MinimalScrollCB cb)       { wnd->callbacks.scroll = cb; }
+void MinimalSetCursorPosCallback(MinimalWindow* wnd, MinimalCursorPosCB cb) { wnd->callbacks.cursor_pos = cb; }

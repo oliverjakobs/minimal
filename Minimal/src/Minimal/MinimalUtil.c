@@ -1,7 +1,5 @@
 #include "MinimalUtil.h"
 
-#include "MinimalWindow.h"
-
 /*
  * -----------------------------------------------------------------------------------
  *                               Debug Logging
@@ -58,24 +56,6 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  * -----------------------------------------------------------------------------------
  */
 
-static uint64_t MinimalTimerGetValue(const MinimalTimer* timer)
-{
-    uint64_t value;
-    QueryPerformanceCounter((LARGE_INTEGER*)&value);
-    return value;
-}
-
-void MinimalTimerInit(MinimalTimer* timer)
-{
-    uint64_t frequency;
-    if (!QueryPerformanceFrequency((LARGE_INTEGER*)&frequency))
-        MINIMAL_WARN("High-resolution performance counter is not supported");
-
-    timer->frequency = frequency;
-    timer->offset = MinimalTimerGetValue(timer);
-    MinimalTimerReset(timer);
-}
-
 void MinimalTimerReset(MinimalTimer* timer)
 {
     timer->seconds = 0.0;
@@ -86,16 +66,14 @@ void MinimalTimerReset(MinimalTimer* timer)
     timer->lastframe = 0.0;
 }
 
-void MinimalTimerStart(MinimalTimer* timer)
+void MinimalTimerStart(MinimalTimer* timer, double seconds)
 {
-    double seconds = MinimalGetTime(timer);
     timer->deltatime = seconds - timer->lastframe;
     timer->lastframe = seconds;
 }
 
-void MinimalTimerEnd(MinimalTimer* timer)
+void MinimalTimerEnd(MinimalTimer* timer, double seconds)
 {
-    double seconds = MinimalGetTime(timer);
     timer->frames++;
     if ((seconds - timer->seconds) > 1.0)
     {
@@ -103,9 +81,4 @@ void MinimalTimerEnd(MinimalTimer* timer)
         timer->fps = timer->frames;
         timer->frames = 0;
     }
-}
-
-double MinimalGetTime(const MinimalTimer* timer)
-{
-    return (double)(MinimalTimerGetValue(timer) - timer->offset) / timer->frequency;
 }

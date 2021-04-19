@@ -1,14 +1,11 @@
 
 #include "Ignis/Ignis.h"
-#include "Minimal/MinimalWindow.h"
+#include "Minimal/Minimal.h"
 #include "Minimal/MinimalInput.h"
 
 #include "Graphics/Renderer.h"
 #include "GUI/Gui.h"
 #include "gjk.h"
-
-MinimalTimer timer;
-MinimalWindow window;
 
 mat4 view;
 
@@ -60,7 +57,7 @@ gjk_vec2 poly_verts[] =
 gjk_vec2 GetMousePos()
 {
     gjk_vec2 pos = { 0 };
-    MinimalGetCursorPos(&window, &pos.x, &pos.y);
+    MinimalGetCursorPos(&pos.x, &pos.y);
 
     pos.x = (pos.x / 100.0f) - WIDTH * .5f;
     pos.y = HEIGHT - (pos.y / 100.0f) - HEIGHT * .5f;
@@ -96,7 +93,7 @@ static void IgnisErrorCallback(ignisErrorLevel level, const char* desc)
     }
 }
 
-int OnInit()
+uint8_t OnLoad(MinimalApp* app)
 {
     /* ingis initialization */
     ignisSetErrorCallback(IgnisErrorCallback);
@@ -129,12 +126,10 @@ int OnInit()
     gjk_poly(&triangle, triangle_verts, 3);
     gjk_poly(&poly, poly_verts, 6);
 
-    MinimalTimerInit(&timer);
-
     return 1;
 }
 
-void OnDestroy()
+void OnDestroy(MinimalApp* app)
 {
     FontRendererDestroy();
     Primitives2DDestroy();
@@ -144,15 +139,18 @@ void OnDestroy()
     GuiDestroy(&gui);
 }
 
-void OnUpdate(float deltatime)
+void OnUpdate(MinimalApp* app, float deltatime)
 {
+    if (MinimalKeyPressed(MINIMAL_KEY_ESCAPE))
+        MinimalClose(app);
+
     mouse = GetMousePos();
     gjk_set_center(&triangle, mouse);
 
     collision = gjk_collision(&triangle, &poly, simplex);
 }
 
-void OnRender()
+void OnRender(MinimalApp* app)
 {
     Primitives2DStart(view.v);
 
@@ -182,64 +180,35 @@ void OnRender()
     Primitives2DFlush();
 }
 
-void OnRenderDebug()
+void OnRenderDebug(MinimalApp* app)
 {
     FontRendererStart(GuiGetScreenProjPtr(&gui));
 
     /* fps */
-    FontRendererRenderTextFormat(8.0f, 8.0f, "FPS: %d", timer.fps);
+    FontRendererRenderTextFormat(8.0f, 8.0f, "FPS: %d", MinimalGetFps(app));
 
     FontRendererFlush();
 }
 
-void KeyCallback(MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods)
+void ClearBuffer()
 {
-    if (action == MINIMAL_PRESS)
-        MINIMAL_TRACE("KeyPressed: %d, %d", keycode, scancode);
-    else
-        MINIMAL_TRACE("KeyReleased : %d, %d", keycode, scancode);
-}
-
-void MouseButtonCallback(MinimalWindow* wnd, UINT button, UINT action, UINT mods)
-{
-    if (action == MINIMAL_PRESS)
-        MINIMAL_TRACE("ButtonPressed: %d", button);
-    else
-        MINIMAL_TRACE("ButtonReleased : %d", button);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 int main()
 {
-    MinimalCreateWindow(&window, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT);
+    MinimalApp app = { 0 };
+    MinimalSetLoadCallback(&app, OnLoad);
+    MinimalSetDestroyCallback(&app, OnDestroy);
+    MinimalSetUpdateCallback(&app, OnUpdate);
+    MinimalSetRenderCallback(&app, OnRender);
+    MinimalSetRenderDebugCallback(&app, OnRenderDebug);
 
-    MinimalCreateKeyTable();
+    MinimalLoad(&app, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, "4.4");
 
-    MinimalSetKeyCallback(&window, KeyCallback);
-    MinimalSetMButtonCallback(&window, MouseButtonCallback);
+    MinimalRun(&app, ClearBuffer);
 
-    if (!OnInit()) return -1;
-
-    while (!MinimalShouldClose(&window))
-    {
-        MinimalTimerStart(&timer);
-
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        if (MinimalKeyPressed(&window, MINIMAL_KEY_ESCAPE))
-            MinimalCloseWindow(&window);
-
-        OnUpdate(timer.deltatime);
-
-        OnRender();
-        OnRenderDebug();
-
-        MinimalPollEvent(&window);
-        MinimalSwapBuffer(&window);
-        MinimalTimerEnd(&timer);
-    }
-
-    OnDestroy();
-    MinimalDestroyWindow(&window);
+    MinimalDestroy(&app);
 
     return 0;
 }

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 typedef struct MinimalWindow MinimalWindow;
 
@@ -53,8 +54,6 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
  *                               Timer
  * -----------------------------------------------------------------------------------
  */
-#include <time.h>
-
 typedef struct
 {
     uint32_t frames;
@@ -63,17 +62,11 @@ typedef struct
     double seconds;
     double deltatime;
     double lastframe;
-
-    uint64_t    frequency;
-    uint64_t    offset;
 } MinimalTimer;
 
-void MinimalTimerInit(MinimalTimer* timer);
 void MinimalTimerReset(MinimalTimer* timer);
 
-void MinimalTimerStart(MinimalTimer* timer);
-void MinimalTimerEnd(MinimalTimer* timer);
-
-double MinimalGetTime(const MinimalTimer* timer);
+void MinimalTimerStart(MinimalTimer* timer, double seconds);
+void MinimalTimerEnd(MinimalTimer* timer, double seconds);
 
 #endif // !MINIMAL_UTIL_H
