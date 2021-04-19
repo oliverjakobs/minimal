@@ -2,7 +2,6 @@
 #define MINIMAL_WINDOW_H
 
 #include "MinimalUtil.h"
-#include "MinimalInput.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -53,7 +52,7 @@ void MinimalSetWindowTitle(MinimalWindow* window, const char* str);
 uint32_t MinimalGetWindowWidth(const MinimalWindow* window);
 uint32_t MinimalGetWindowHeigth(const MinimalWindow* window);
 
-uint8_t MinimalShouldClose(const MinimalWindow* window);
+uint8_t MinimalShouldCloseWindow(const MinimalWindow* window);
 void MinimalCloseWindow(MinimalWindow* window);
 
 void MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size);
@@ -63,5 +62,14 @@ void MinimalSetCharCallback(MinimalWindow* window, MinimalCharCB character);
 void MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button);
 void MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll);
 void MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos);
+
+/* --------------------------| Input |----------------------------------- */
+void MinimalCreateKeyTable();
+
+/* tanslate win32 virtual key codes to minimal key codes */
+uint32_t MinimalTranslateKey(uint32_t scancode);
+
+int8_t MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode);
+int8_t MinimalGetMouseButtonState(const MinimalWindow* window, uint32_t button);
 
 #endif // !MINIMAL_WINDOW_H

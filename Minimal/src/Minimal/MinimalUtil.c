@@ -1,10 +1,17 @@
 #include "MinimalUtil.h"
 
-/*
- * -----------------------------------------------------------------------------------
- *                               Debug Logging
- * -----------------------------------------------------------------------------------
- */
+/* --------------------------| Input |----------------------------------- */
+uint8_t MinimalKeycodeValid(uint32_t keycode)
+{
+    return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
+}
+
+uint8_t MinimalMouseButtonValid(uint32_t buttoncode)
+{
+    return buttoncode >= MINIMAL_MOUSE_BUTTON_1 && buttoncode <= MINIMAL_MOUSE_BUTTON_LAST;
+}
+
+/* --------------------------| Logging |--------------------------------- */
 #define MINIMAL_LOG_BLACK       "\x1b[30m"
 #define MINIMAL_LOG_RED         "\x1b[31m"
 #define MINIMAL_LOG_GREEN       "\x1b[32m"
@@ -50,12 +57,7 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
     fprintf(stream, "\n");
 }
 
-/*
- * -----------------------------------------------------------------------------------
- *                               Timer
- * -----------------------------------------------------------------------------------
- */
-
+/* --------------------------| Timer |----------------------------------- */
 void MinimalTimerReset(MinimalTimer* timer)
 {
     timer->seconds = 0.0;

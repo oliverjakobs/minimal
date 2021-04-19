@@ -10,11 +10,7 @@ double MinimalGetTime();
 void MinimalMakeContextCurrent(MinimalWindow* context);
 MinimalWindow* MinimalGetCurrentContext();
 
-/*
- * -----------------------------------------------------------------------------------
- *                               Minimal App
- * -----------------------------------------------------------------------------------
- */
+/* --------------------------| Minimal App |----------------------------- */
 typedef struct MinimalApp MinimalApp;
 
 typedef uint8_t (*MinimalLoadCB)    (MinimalApp* app);
@@ -38,14 +34,12 @@ struct MinimalApp
     MinimalRenderDebugCB    on_render_debug;
     MinimalRenderGUICB      on_render_gui;
 
-    uint8_t running;
     uint8_t debug;
     uint8_t vsync;
 
     MinimalTimer timer;
 };
 
-/* --------------------------| Setup |----------------------------------- */
 uint8_t MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version);
 void MinimalDestroy(MinimalApp* app);
 
@@ -68,5 +62,14 @@ void MinimalToggleDebug(MinimalApp* app);
 void MinimalToggleVsync(MinimalApp* app);
 
 uint32_t MinimalGetFps(MinimalApp* app);
+
+/* --------------------------| Input |----------------------------------- */
+uint8_t MinimalKeyPressed(uint32_t keycode);
+uint8_t MinimalKeyReleased(uint32_t  keycode);
+
+uint8_t MinimalMouseButtonPressed(uint32_t button);
+uint8_t MinimalMouseButtonReleased(uint32_t  button);
+
+void MinimalGetCursorPos(float* x, float* y);
 
 #endif // !MINIMAL_H

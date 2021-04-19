@@ -1,7 +1,6 @@
 
 #include "Ignis/Ignis.h"
 #include "Minimal/Minimal.h"
-#include "Minimal/MinimalInput.h"
 
 #include "Graphics/Renderer.h"
 #include "GUI/Gui.h"
@@ -204,7 +203,8 @@ int main()
     MinimalSetRenderCallback(&app, OnRender);
     MinimalSetRenderDebugCallback(&app, OnRenderDebug);
 
-    MinimalLoad(&app, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, "4.4");
+    char* version = "4.4";
+    MinimalLoad(&app, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, version);
 
     MinimalRun(&app, ClearBuffer);
 
