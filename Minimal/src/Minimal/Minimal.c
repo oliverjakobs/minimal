@@ -1,5 +1,7 @@
 #include "Minimal.h"
 
+#include "MinimalWGL.h"
+
 #include "toolbox/tb_str.h"
 
 static uint64_t     _minimal_timer_frequency;
@@ -28,7 +30,32 @@ uint8_t MinimalInit()
     _minimal_timer_offset = MinimalGetTimeValue();
     _minimal_current_context = NULL;
 
+	if (!MinimalRegisterWindowClass())
+	{
+		MINIMAL_ERROR("Failed to register window class");
+		return MINIMAL_FAIL;
+	}
+
+	if (!MinimalCreateHelperWindow())
+	{
+		MINIMAL_ERROR("Failed to create helper window");
+		return MINIMAL_FAIL;
+	}
+
+	if (!MinimalInitWGL())
+	{
+		MINIMAL_ERROR("Failed to initialize WGL");
+		return MINIMAL_FAIL;
+	}
+
     return MINIMAL_OK;
+}
+
+void MinimalTerminate()
+{
+	MinimalTerminateWGL();
+	MinimalDestroyHelperWindow();
+	MinimalUnregisterWindowClass();
 }
 
 double MinimalGetTime()
@@ -39,6 +66,21 @@ double MinimalGetTime()
 void MinimalMakeContextCurrent(MinimalWindow* context)	{ _minimal_current_context = context; }
 MinimalWindow* MinimalGetCurrentContext()				{ return _minimal_current_context; }
 
+
+void MinimalGetVersion(int* major, int* minor, int* rev)
+{
+	if (major != NULL) *major = MINIMAL_VERSION_MAJOR;
+	if (minor != NULL) *minor = MINIMAL_VERSION_MINOR;
+	if (rev != NULL)   *rev = MINIMAL_VERSION_REVISION;
+}
+
+#define MINIMAL_CONCAT_VERSION(m, n, r) #m "." #n "." #r
+#define MINIMAL_MAKE_VERSION_STR(m, n, r) MINIMAL_CONCAT_VERSION(m, n, r)
+
+const char* MinimalGetVersionString(void)
+{
+	return MINIMAL_MAKE_VERSION_STR(MINIMAL_VERSION_MAJOR, MINIMAL_VERSION_MINOR, MINIMAL_VERSION_REVISION);
+}
 
 /* --------------------------| Minimal App |----------------------------- */
 static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
@@ -53,13 +95,6 @@ static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
 
 uint8_t MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version)
 {
-	app->title = tb_strdup(title);
-	if (!app->title)
-	{
-		MINIMAL_ERROR("[GLFW] Failed to allocate memory for title");
-		return MINIMAL_FAIL;
-	}
-
 	app->debug = 0;
 	app->vsync = 0;
 
@@ -70,15 +105,11 @@ uint8_t MinimalLoad(MinimalApp* app, const char* title, int width, int height, c
 		return MINIMAL_FAIL;
 	}
 
-	MINIMAL_INFO("[Minimal] Initialized Minimal");
-
-	int gl_major, gl_minor;
-	MinimalGetGLVersion(gl_version, &gl_major, &gl_minor);
-
-	MINIMAL_INFO("Version: %d.%d", gl_major, gl_minor);
+	MinimalWindowConfig wnd_config = { .title = title, .width = width, .height = height };
+	MinimalGetGLVersion(gl_version, &wnd_config.gl_major, &wnd_config.gl_minor);
 
 	/* creating the window */
-	if (!MinimalCreateWindow(&app->window, "Minimal", width, height))
+	if (!MinimalCreateWindow(&app->window, &wnd_config))
 	{
 		MINIMAL_ERROR("[Minimal] Failed to create Minimal window");
 		return MINIMAL_FAIL;

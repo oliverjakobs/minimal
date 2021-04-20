@@ -2,45 +2,18 @@
 
 #include "MinimalWindow.h"
 
-HINSTANCE _min_wgl_instance = NULL;
-PFN_wglCreateContext        _min_wgl_create_context = NULL;
-PFN_wglDeleteContext        _min_wgl_delete_context = NULL;
-PFN_wglGetProcAddress       _min_wgl_get_proc_address = NULL;
-PFN_wglGetCurrentDC         _min_wgl_get_current_dc = NULL;
-PFN_wglGetCurrentContext    _min_wgl_get_current = NULL;
-PFN_wglMakeCurrent          _min_wgl_make_current = NULL;
-PFN_wglShareLists           _min_wgl_share_lists = NULL;
+static uint8_t _min_wgl_initialized = 0;
 
-wglCreateContextAttribsARB_T    _min_wgl_create_context_attribs_ARB = NULL;
-wglSwapIntervalEXT_T            _min_wgl_swap_interval_EXT = NULL;
-wglChoosePixelFormatARB_T       _min_wgl_choose_pixel_format_ARB = NULL;
+static wglCreateContextAttribsARB_T    _min_wglCreateContextAttribsARB = NULL;
+static wglSwapIntervalEXT_T            _min_wglSwapIntervalEXT = NULL;
+static wglChoosePixelFormatARB_T       _min_wglChoosePixelFormatARB = NULL;
 
 uint8_t MinimalInitWGL()
 {
+    if (_min_wgl_initialized) return MINIMAL_OK;
+
     HGLRC prc, rc;
     HDC pdc, dc;
-
-    if (_min_wgl_instance) return MINIMAL_OK;
-
-    _min_wgl_instance = LoadLibraryA("opengl32.dll");
-    if (!_min_wgl_instance)
-    {
-        MINIMAL_ERROR("WGL: Failed to load opengl32.dll");
-        return MINIMAL_FAIL;
-    }
-
-    _min_wgl_create_context = (PFN_wglCreateContext)GetProcAddress(_min_wgl_instance, "wglCreateContext");
-    _min_wgl_delete_context = (PFN_wglDeleteContext)GetProcAddress(_min_wgl_instance, "wglDeleteContext");
-    _min_wgl_get_proc_address = (PFN_wglGetProcAddress)GetProcAddress(_min_wgl_instance, "wglGetProcAddress");
-    _min_wgl_get_current_dc = (PFN_wglGetCurrentDC)GetProcAddress(_min_wgl_instance, "wglGetCurrentDC");
-    _min_wgl_get_current = (PFN_wglGetCurrentContext)GetProcAddress(_min_wgl_instance, "wglGetCurrentContext");
-    _min_wgl_make_current = (PFN_wglMakeCurrent)GetProcAddress(_min_wgl_instance, "wglMakeCurrent");
-    _min_wgl_share_lists = (PFN_wglShareLists)GetProcAddress(_min_wgl_instance, "wglShareLists");
-
-    // NOTE: A dummy context has to be created for opengl32.dll to load the
-    //       OpenGL ICD, from which we can then query WGL extensions
-    // NOTE: This code will accept the Microsoft GDI ICD; accelerated context
-    //       creation failure occurs during manual pixel format enumeration
 
     dc = GetDC(MinimalGetHelperWindow());
 
@@ -75,9 +48,11 @@ uint8_t MinimalInitWGL()
         return MINIMAL_FAIL;
     }
 
-    _min_wgl_create_context_attribs_ARB = (wglCreateContextAttribsARB_T)wglGetProcAddress("wglCreateContextAttribsARB");
-    _min_wgl_swap_interval_EXT = (wglSwapIntervalEXT_T)wglGetProcAddress("wglSwapIntervalEXT");
-    _min_wgl_choose_pixel_format_ARB = (wglChoosePixelFormatARB_T)wglGetProcAddress("wglChoosePixelFormatARB_T");
+    _min_wglCreateContextAttribsARB = (wglCreateContextAttribsARB_T)wglGetProcAddress("wglCreateContextAttribsARB");
+    _min_wglSwapIntervalEXT =         (wglSwapIntervalEXT_T)wglGetProcAddress("wglSwapIntervalEXT");
+    _min_wglChoosePixelFormatARB =    (wglChoosePixelFormatARB_T)wglGetProcAddress("wglChoosePixelFormatARB");
+
+    _min_wgl_initialized = 1;
 
     wglMakeCurrent(pdc, prc);
     wglDeleteContext(rc);
@@ -86,7 +61,7 @@ uint8_t MinimalInitWGL()
 
 void MinimalTerminateWGL()
 {
-    if (_min_wgl_instance) FreeLibrary(_min_wgl_instance);
+    _min_wgl_initialized = 0;
 }
 
 static int MinimalChoosePixelFormat(MinimalWindow* window)
@@ -105,7 +80,7 @@ static int MinimalChoosePixelFormat(MinimalWindow* window)
 
     int pixel_format;
     UINT num_formats;
-    _min_wgl_choose_pixel_format_ARB(window->device_context, pf_attribs, 0, 1, &pixel_format, &num_formats);
+    _min_wglChoosePixelFormatARB(window->device_context, pf_attribs, 0, 1, &pixel_format, &num_formats);
     if (!num_formats)
     {
         MINIMAL_ERROR("Could not find a suitable pixel format");
@@ -148,7 +123,7 @@ uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
         0,
     };
 
-    window->render_context = _min_wgl_create_context_attribs_ARB(window->device_context, 0, gl_attribs);
+    window->render_context = _min_wglCreateContextAttribsARB(window->device_context, 0, gl_attribs);
     if (!window->render_context)
     {
         MINIMAL_ERROR("Failed to create render context");
@@ -162,4 +137,34 @@ uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
     }
 
     return MINIMAL_OK;
+}
+
+uint8_t MinimalDestroyContextWGL(MinimalWindow* window)
+{
+    uint8_t status = MINIMAL_OK;
+    if (window->render_context)
+    {
+        if (!wglMakeCurrent(NULL, NULL))
+        {
+            MINIMAL_ERROR("Failed to realease render context");
+            status = MINIMAL_FAIL;
+        }
+
+        if (!wglDeleteContext(window->render_context))
+        {
+            MINIMAL_ERROR("Failed to delete render context");
+            status = MINIMAL_FAIL;
+        }
+    }
+
+    if (window->device_context && !ReleaseDC(window->handle, window->device_context))
+    {
+        MINIMAL_ERROR("Failed to release device context");
+        status = MINIMAL_FAIL;
+    }
+
+    window->render_context = NULL;
+    window->device_context = NULL;
+
+    return status;
 }

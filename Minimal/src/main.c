@@ -203,8 +203,9 @@ int main()
     MinimalSetRenderCallback(&app, OnRender);
     MinimalSetRenderDebugCallback(&app, OnRenderDebug);
 
-    char* version = "4.4";
-    MinimalLoad(&app, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, version);
+    MinimalLoad(&app, "Minimal", (int)SCREEN_WIDTH, (int)SCREEN_HEIGHT, "4.5");
+
+    MINIMAL_INFO("Initialized Minimal %s", MinimalGetVersionString());
 
     MinimalRun(&app, ClearBuffer);
 

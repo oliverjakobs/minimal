@@ -49,5 +49,6 @@ uint8_t MinimalInitWGL();
 void MinimalTerminateWGL();
 
 uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor);
+uint8_t MinimalDestroyContextWGL(MinimalWindow* window);
 
 #endif // !MINIMAL_WGL_H

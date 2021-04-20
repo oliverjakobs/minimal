@@ -3,12 +3,21 @@
 
 #include "MinimalWindow.h"
 
+/* Minimal version numbers */
+#define MINIMAL_VERSION_MAJOR       1
+#define MINIMAL_VERSION_MINOR       0
+#define MINIMAL_VERSION_REVISION    0
+
 uint8_t MinimalInit();
+void MinimalTerminate();
 
 double MinimalGetTime();
 
 void MinimalMakeContextCurrent(MinimalWindow* context);
 MinimalWindow* MinimalGetCurrentContext();
+
+void MinimalGetVersion(int* major, int* minor, int* rev);
+const char* MinimalGetVersionString(void);
 
 /* --------------------------| Minimal App |----------------------------- */
 typedef struct MinimalApp MinimalApp;
@@ -23,7 +32,6 @@ typedef void (*MinimalRenderGUICB)  (MinimalApp* app);
 
 struct MinimalApp
 {
-    char* title;
     MinimalWindow window;
 
     MinimalLoadCB       on_load;

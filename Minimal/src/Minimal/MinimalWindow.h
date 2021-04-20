@@ -10,6 +10,13 @@
 
 #define MINIMAL_WNDCLASSNAME L"MINIMALWNDCLASS"
 
+uint8_t MinimalRegisterWindowClass();
+uint8_t MinimalUnregisterWindowClass();
+
+uint8_t MinimalCreateHelperWindow();
+uint8_t MinimalDestroyHelperWindow();
+HWND MinimalGetHelperWindow();
+
 typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, long w, long h);
 typedef void (*MinimalCloseCB)      (MinimalWindow* wnd);
 typedef void (*MinimalKeyCB)        (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
@@ -43,13 +50,17 @@ struct MinimalWindow
     } callbacks;
 };
 
-uint8_t MinimalRegisterWindowClass();
-uint8_t MinimalUnregisterWindowClass();
+typedef struct
+{
+    const char* title;
+    uint32_t width;
+    uint32_t height;
 
-uint8_t MinimalCreateHelperWindow();
-HWND MinimalGetHelperWindow();
+    int gl_major;
+    int gl_minor;
+} MinimalWindowConfig;
 
-uint8_t MinimalCreateWindow(MinimalWindow* window, const char* title, uint32_t width, uint32_t height);
+uint8_t MinimalCreateWindow(MinimalWindow* window, const MinimalWindowConfig* config);
 uint8_t MinimalDestroyWindow(MinimalWindow* window);
 
 void MinimalPollEvent(MinimalWindow* window);

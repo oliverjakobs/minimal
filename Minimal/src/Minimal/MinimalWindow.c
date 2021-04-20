@@ -2,208 +2,7 @@
 
 #include <windowsx.h>
 
-typedef HGLRC WINAPI wglCreateContextAttribsARB_T(HDC hdc, HGLRC hShareContext, const int* attribList);
-wglCreateContextAttribsARB_T* wglCreateContextAttribsARB;
-
-// See https://www.opengl.org/registry/specs/ARB/wgl_create_context.txt for all values
-#define WGL_CONTEXT_MAJOR_VERSION_ARB             0x2091
-#define WGL_CONTEXT_MINOR_VERSION_ARB             0x2092
-#define WGL_CONTEXT_PROFILE_MASK_ARB              0x9126
-
-#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB          0x00000001
-
-typedef BOOL WINAPI wglChoosePixelFormatARB_T(HDC hdc, const int* piAttribIList, const float* pfAttribFList, 
-                                              UINT nMaxFormats, int* piFormats, UINT* nNumFormats);
-wglChoosePixelFormatARB_T* wglChoosePixelFormatARB;
-
-// See https://www.opengl.org/registry/specs/ARB/wgl_pixel_format.txt for all values
-#define WGL_DRAW_TO_WINDOW_ARB                    0x2001
-#define WGL_ACCELERATION_ARB                      0x2003
-#define WGL_SUPPORT_OPENGL_ARB                    0x2010
-#define WGL_DOUBLE_BUFFER_ARB                     0x2011
-#define WGL_PIXEL_TYPE_ARB                        0x2013
-#define WGL_COLOR_BITS_ARB                        0x2014
-#define WGL_DEPTH_BITS_ARB                        0x2022
-#define WGL_STENCIL_BITS_ARB                      0x2023
-
-#define WGL_FULL_ACCELERATION_ARB                 0x2027
-#define WGL_TYPE_RGBA_ARB                         0x202B
-
-static uint8_t MinimalLoadGLExtensions()
-{
-    // Before we can load extensions, we need a dummy OpenGL context, created using a dummy window.
-    // We use a dummy window because you can only set the pixel format for a window once. For the
-    // real window, we want to use wglChoosePixelFormatARB (so we can potentially specify options
-    // that aren't available in PIXELFORMATDESCRIPTOR), but we can't load and use that before we
-    // have a context.
-
-    WCHAR DUMMY_CLASS_NAME[] = L"MinimalDummyWindowClass";
-    HINSTANCE instance = GetModuleHandleW(NULL);
-
-    WNDCLASSW dummy_class = { 0 };
-    dummy_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    dummy_class.lpfnWndProc = DefWindowProcA;
-    dummy_class.hInstance = instance;
-    dummy_class.lpszClassName = DUMMY_CLASS_NAME;
-
-    if (!RegisterClassW(&dummy_class))
-    {
-        MINIMAL_ERROR("Failed to register dummy window class.");
-        return MINIMAL_FAIL;
-    }
-
-    HWND dummy_window = CreateWindowExW(0, DUMMY_CLASS_NAME, NULL, 0, 0, 0, 0, 0, 0, 0, instance, 0);
-    if (!dummy_window)
-    {
-        MINIMAL_ERROR("Failed to create dummy OpenGL window.");
-        return MINIMAL_FAIL;
-    }
-
-    HDC dummy_dc = GetDC(dummy_window);
-
-    PIXELFORMATDESCRIPTOR pfd = {
-        .nSize = sizeof(pfd),
-        .nVersion = 1,
-        .iPixelType = PFD_TYPE_RGBA,
-        .dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
-        .cColorBits = 32,
-        .cAlphaBits = 8,
-        .iLayerType = PFD_MAIN_PLANE,
-        .cDepthBits = 24,
-        .cStencilBits = 8,
-    };
-
-    int pixel_format = ChoosePixelFormat(dummy_dc, &pfd);
-    if (!pixel_format)
-    {
-        MINIMAL_ERROR("Failed to find a suitable pixel format.");
-        return MINIMAL_FAIL;
-    }
-    if (!SetPixelFormat(dummy_dc, pixel_format, &pfd))
-    {
-        MINIMAL_ERROR("Failed to set the pixel format.");
-        return MINIMAL_FAIL;
-    }
-
-    HGLRC dummy_context = wglCreateContext(dummy_dc);
-    if (!dummy_context)
-    {
-        MINIMAL_ERROR("Failed to create a dummy rendering context.");
-        return MINIMAL_FAIL;
-    }
-
-    if (!wglMakeCurrent(dummy_dc, dummy_context))
-    {
-        MINIMAL_ERROR("Failed to activate dummy rendering context.");
-        return MINIMAL_FAIL;
-    }
-
-    wglCreateContextAttribsARB = (wglCreateContextAttribsARB_T*)wglGetProcAddress("wglCreateContextAttribsARB");
-    wglChoosePixelFormatARB =    (wglChoosePixelFormatARB_T*)wglGetProcAddress("wglChoosePixelFormatARB");
-
-    wglMakeCurrent(dummy_dc, 0);
-    wglDeleteContext(dummy_context);
-    ReleaseDC(dummy_window, dummy_dc);
-    DestroyWindow(dummy_window);
-
-    return MINIMAL_OK;
-}
-
-static uint8_t MinimalCreateRenderContex(MinimalWindow* wnd, int gl_major, int gl_minor)
-{
-    if (!MinimalLoadGLExtensions()) return MINIMAL_FAIL;
-
-    wnd->device_context = GetDC(wnd->handle);
-    if (!wnd->device_context)
-    {
-        MINIMAL_ERROR("Failed to retrieve device context handle");
-        return MINIMAL_FAIL;
-    }
-
-    // Now we can choose a pixel format the modern way, using wglChoosePixelFormatARB.
-    int pixel_format_attribs[] = {
-        WGL_DRAW_TO_WINDOW_ARB,     1,
-        WGL_SUPPORT_OPENGL_ARB,     1,
-        WGL_DOUBLE_BUFFER_ARB,      1,
-        WGL_ACCELERATION_ARB,       WGL_FULL_ACCELERATION_ARB,
-        WGL_PIXEL_TYPE_ARB,         WGL_TYPE_RGBA_ARB,
-        WGL_COLOR_BITS_ARB,         32,
-        WGL_DEPTH_BITS_ARB,         24,
-        WGL_STENCIL_BITS_ARB,       8,
-        0
-    };
-
-    int pixel_format;
-    UINT num_formats;
-    wglChoosePixelFormatARB(wnd->device_context, pixel_format_attribs, 0, 1, &pixel_format, &num_formats);
-    if (!num_formats)
-    {
-        MINIMAL_ERROR("Could not find a suitable pixel format");
-        return MINIMAL_FAIL;
-    }
-
-    PIXELFORMATDESCRIPTOR pfd;
-    DescribePixelFormat(wnd->device_context, pixel_format, sizeof(pfd), &pfd);
-    if (!SetPixelFormat(wnd->device_context, pixel_format, &pfd))
-    {
-        MINIMAL_ERROR("Failed to set pixel format");
-        return MINIMAL_FAIL;
-    }
-
-    // Specify that we want to create an OpenGL 3.3 core profile context
-    int gl_attribs[] = 
-    {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, gl_major,
-        WGL_CONTEXT_MINOR_VERSION_ARB, gl_minor,
-        WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-        0,
-    };
-
-    wnd->render_context = wglCreateContextAttribsARB(wnd->device_context, 0, gl_attribs);
-    if (!wnd->render_context)
-    {
-        MINIMAL_ERROR("Failed to create render context");
-        return MINIMAL_FAIL;
-    }
-
-    if (!wglMakeCurrent(wnd->device_context, wnd->render_context))
-    {
-        MINIMAL_ERROR("Failed to make render context current");
-        return MINIMAL_FAIL;
-    }
-
-    return MINIMAL_OK;
-}
-
-static uint8_t MinimalDestroyRenderContext(MinimalWindow* wnd)
-{
-    uint8_t status = MINIMAL_OK;
-    if (wnd->render_context)
-    {
-        if (!wglMakeCurrent(NULL, NULL))
-        {
-            MINIMAL_ERROR("Failed to realease render context");
-            status = MINIMAL_FAIL;
-        }
-
-        if (!wglDeleteContext(wnd->render_context))
-        {
-            MINIMAL_ERROR("Failed to delete render context");
-            status = MINIMAL_FAIL;
-        }
-    }
-
-    if (wnd->device_context && !ReleaseDC(wnd->handle, wnd->device_context))
-    {
-        MINIMAL_ERROR("Failed to release device context");
-        status = MINIMAL_FAIL;
-    }
-
-    wnd->render_context = NULL;
-    wnd->device_context = NULL;
-
-    return status;
-}
+#include "MinimalWGL.h"
 
 static uint32_t MinimalGetKeyMods()
 {
@@ -386,16 +185,28 @@ uint8_t MinimalCreateHelperWindow()
     return MINIMAL_OK;
 }
 
+uint8_t MinimalDestroyHelperWindow()
+{
+    if (_minimal_helper_hwnd && !DestroyWindow(_minimal_helper_hwnd))
+    {
+        MINIMAL_ERROR("Failed to destroy helper window");
+        return MINIMAL_FAIL;
+    }
+
+    _minimal_helper_hwnd = NULL;
+    return MINIMAL_OK;
+}
+
 HWND MinimalGetHelperWindow()
 {
     return _minimal_helper_hwnd;
 }
 
-uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t width, uint32_t height)
+uint8_t MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* config)
 {
     wnd->instance = GetModuleHandleW(NULL);
 
-    RECT rect = { .right = width, .bottom = height };
+    RECT rect = { .right = config->width, .bottom = config->height };
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
     AdjustWindowRect(&rect, style, 0);
 
@@ -405,7 +216,7 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t widt
     wnd->handle = CreateWindowExW(0, MINIMAL_WNDCLASSNAME, NULL, style, x, y, w, h, 0, 0, wnd->instance, 0);
     wnd->should_close = 0;
 
-    MinimalSetWindowTitle(wnd, title);
+    MinimalSetWindowTitle(wnd, config->title);
     SetPropW(wnd->handle, L"Minimal", wnd);
 
     memset(wnd->key_state, MINIMAL_RELEASE, sizeof(wnd->key_state));
@@ -419,12 +230,12 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const char* title, uint32_t widt
     wnd->callbacks.scroll = NULL;
     wnd->callbacks.cursor_pos = NULL;
 
-    return MinimalCreateRenderContex(wnd, 4, 3);
+    return MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor);
 }
 
 uint8_t MinimalDestroyWindow(MinimalWindow* wnd)
 {
-    int status = MinimalDestroyRenderContext(wnd);
+    int status = MinimalDestroyContextWGL(wnd);
 
     if (wnd->handle && !DestroyWindow(wnd->handle))
     {
