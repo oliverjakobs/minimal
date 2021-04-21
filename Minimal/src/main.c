@@ -81,7 +81,6 @@ void RenderPoly(gjk_shape* shape, IgnisColorRGBA color)
     RenderPoint(shape->center, color);
 }
 
-
 static void IgnisErrorCallback(ignisErrorLevel level, const char* desc)
 {
     switch (level)
@@ -92,8 +91,11 @@ static void IgnisErrorCallback(ignisErrorLevel level, const char* desc)
     }
 }
 
-uint8_t OnLoad(MinimalApp* app)
+MinimalBool OnLoad(MinimalApp* app)
 {
+    MinimalEnableDebug(app, 1);
+    MinimalEnableVsync(app, 0);
+
     /* ingis initialization */
     ignisSetErrorCallback(IgnisErrorCallback);
 

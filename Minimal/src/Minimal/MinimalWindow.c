@@ -18,7 +18,7 @@ static uint32_t MinimalGetKeyMods()
 
 static uint8_t MinimalCheckMouseButtons(MinimalWindow* window)
 {
-    int i;
+    uint8_t i;
     for (i = 0; i <= MINIMAL_MOUSE_BUTTON_LAST; i++)
     {
         if (window->mouse_buttons[i] == MINIMAL_PRESS)
@@ -38,14 +38,7 @@ static UINT MinimalGetMouseButton(UINT msg, WPARAM wParam)
 
 static void MinimalUpdateKey(MinimalWindow* window, UINT key, UINT scancode, UINT action, UINT mods)
 {
-    if (MinimalKeycodeValid(key))
-    {
-        uint8_t prev = window->key_state[key];
-        if (action == MINIMAL_PRESS && prev == MINIMAL_RELEASE)     window->key_state[key] = MINIMAL_PRESS;
-        else if (action == MINIMAL_PRESS && prev == MINIMAL_PRESS)  window->key_state[key] = MINIMAL_REPEAT;
-        else if (action == MINIMAL_RELEASE)                         window->key_state[key] = MINIMAL_RELEASE;
-    }
-
+    if (MinimalKeycodeValid(key)) window->key_state[key].action = (uint8_t)action;
     if (window->callbacks.key) window->callbacks.key(window, key, scancode, action, mods);
 }
 
@@ -129,7 +122,7 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-uint8_t MinimalRegisterWindowClass()
+MinimalBool MinimalRegisterWindowClass()
 {
     WNDCLASSEXW wnd_class = { 0 };
     wnd_class.cbSize = sizeof(WNDCLASSEXW);
@@ -150,7 +143,7 @@ uint8_t MinimalRegisterWindowClass()
     return MINIMAL_OK;
 }
 
-uint8_t MinimalUnregisterWindowClass()
+MinimalBool MinimalUnregisterWindowClass()
 {
     if (!UnregisterClassW(L"MinimalWindowClass", GetModuleHandleW(NULL)))
     {
@@ -162,7 +155,7 @@ uint8_t MinimalUnregisterWindowClass()
 
 static HWND _minimal_helper_hwnd;
 
-uint8_t MinimalCreateHelperWindow()
+MinimalBool MinimalCreateHelperWindow()
 {
     DWORD ex_style = WS_EX_OVERLAPPEDWINDOW;
     DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
@@ -185,7 +178,7 @@ uint8_t MinimalCreateHelperWindow()
     return MINIMAL_OK;
 }
 
-uint8_t MinimalDestroyHelperWindow()
+MinimalBool MinimalDestroyHelperWindow()
 {
     if (_minimal_helper_hwnd && !DestroyWindow(_minimal_helper_hwnd))
     {
@@ -202,7 +195,7 @@ HWND MinimalGetHelperWindow()
     return _minimal_helper_hwnd;
 }
 
-uint8_t MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* config)
+MinimalBool MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* config)
 {
     wnd->instance = GetModuleHandleW(NULL);
 
@@ -219,7 +212,7 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* confi
     MinimalSetWindowTitle(wnd, config->title);
     SetPropW(wnd->handle, L"Minimal", wnd);
 
-    memset(wnd->key_state, MINIMAL_RELEASE, sizeof(wnd->key_state));
+    memset(wnd->key_state, 0, sizeof(wnd->key_state));
     memset(wnd->mouse_buttons, MINIMAL_RELEASE, sizeof(wnd->mouse_buttons));
 
     wnd->callbacks.size = NULL;
@@ -233,9 +226,9 @@ uint8_t MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* confi
     return MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor);
 }
 
-uint8_t MinimalDestroyWindow(MinimalWindow* wnd)
+MinimalBool MinimalDestroyWindow(MinimalWindow* wnd)
 {
-    int status = MinimalDestroyContextWGL(wnd);
+    MinimalBool status = MinimalDestroyContextWGL(wnd);
 
     if (wnd->handle && !DestroyWindow(wnd->handle))
     {
@@ -414,9 +407,18 @@ void MinimalCreateKeyTable()
 
 uint32_t MinimalTranslateKey(uint32_t scancode) { return minimal_key_table[scancode]; }
 
-int8_t MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode)
+void MinimalUpdateKeyStates(MinimalWindow* window)
 {
-    return (window && MinimalKeycodeValid(keycode)) ? window->key_state[keycode] : -1;
+    for (uint32_t key = MINIMAL_KEY_ESCAPE; key <= MINIMAL_KEY_LAST; ++key)
+    {
+        window->key_state[key].previous = window->key_state[key].current;
+        window->key_state[key].current = window->key_state[key].action;
+    }
+}
+
+const MinimalInputState* MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode)
+{
+    return (window && MinimalKeycodeValid(keycode)) ? &window->key_state[keycode] : NULL;
 }
 
 int8_t MinimalGetMouseButtonState(const MinimalWindow* window, uint32_t button)

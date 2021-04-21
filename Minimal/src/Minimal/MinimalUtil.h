@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 typedef struct MinimalWindow MinimalWindow;
+typedef uint8_t MinimalBool;
 
 /* --------------------------| Input |----------------------------------- */
 #define MINIMAL_KEY_UNKNOWN			-1
@@ -162,10 +163,17 @@ typedef struct MinimalWindow MinimalWindow;
 /* input action */
 #define MINIMAL_RELEASE 0
 #define MINIMAL_PRESS   1
-#define MINIMAL_REPEAT  2
 
-uint8_t MinimalKeycodeValid(uint32_t keycode);
-uint8_t MinimalMouseButtonValid(uint32_t buttoncode);
+typedef struct
+{
+    uint8_t current;
+    uint8_t previous;
+
+    uint8_t action;
+} MinimalInputState;
+
+MinimalBool MinimalKeycodeValid(uint32_t keycode);
+MinimalBool MinimalMouseButtonValid(uint32_t buttoncode);
 
 /* --------------------------| Logging |--------------------------------- */
 #ifdef MINIMAL_ENABLE_LOGGING

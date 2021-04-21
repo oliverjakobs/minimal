@@ -36,19 +36,12 @@ typedef BOOL        (WINAPI* wglSwapIntervalEXT_T)(int);
 typedef BOOL        (WINAPI* wglChoosePixelFormatARB_T)(HDC, const int*, const float*, UINT, int*, UINT*);
 typedef HGLRC       (WINAPI* wglCreateContextAttribsARB_T)(HDC, HGLRC, const int*);
 
-// opengl32.dll function pointer typedefs
-typedef HGLRC   (WINAPI* PFN_wglCreateContext)(HDC);
-typedef BOOL    (WINAPI* PFN_wglDeleteContext)(HGLRC);
-typedef PROC    (WINAPI* PFN_wglGetProcAddress)(LPCSTR);
-typedef HDC     (WINAPI* PFN_wglGetCurrentDC)(void);
-typedef HGLRC   (WINAPI* PFN_wglGetCurrentContext)(void);
-typedef BOOL    (WINAPI* PFN_wglMakeCurrent)(HDC, HGLRC);
-typedef BOOL    (WINAPI* PFN_wglShareLists)(HGLRC, HGLRC);
-
-uint8_t MinimalInitWGL();
+MinimalBool MinimalInitWGL();
 void MinimalTerminateWGL();
 
-uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor);
-uint8_t MinimalDestroyContextWGL(MinimalWindow* window);
+MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor);
+MinimalBool MinimalDestroyContextWGL(MinimalWindow* window);
+
+void MinimalSwapIntervalWGL(int interval);
 
 #endif // !MINIMAL_WGL_H

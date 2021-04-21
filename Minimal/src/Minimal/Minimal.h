@@ -8,7 +8,7 @@
 #define MINIMAL_VERSION_MINOR       0
 #define MINIMAL_VERSION_REVISION    0
 
-uint8_t MinimalInit();
+MinimalBool MinimalInit();
 void MinimalTerminate();
 
 double MinimalGetTime();
@@ -22,13 +22,11 @@ const char* MinimalGetVersionString(void);
 /* --------------------------| Minimal App |----------------------------- */
 typedef struct MinimalApp MinimalApp;
 
-typedef uint8_t (*MinimalLoadCB)    (MinimalApp* app);
-typedef void    (*MinimalDestroyCB) (MinimalApp* app);
+typedef MinimalBool (*MinimalLoadCB)    (MinimalApp* app);
+typedef void        (*MinimalDestroyCB) (MinimalApp* app);
 
-typedef void (*MinimalUpdateCB)     (MinimalApp* app, float deltatime);
-typedef void (*MinimalRenderCB)     (MinimalApp* app);
-typedef void (*MinimalRenderDebugCB)(MinimalApp* app);
-typedef void (*MinimalRenderGUICB)  (MinimalApp* app);
+typedef void (*MinimalUpdateCB) (MinimalApp* app, float deltatime);
+typedef void (*MinimalRenderCB) (MinimalApp* app);
 
 struct MinimalApp
 {
@@ -37,13 +35,13 @@ struct MinimalApp
     MinimalLoadCB       on_load;
     MinimalDestroyCB    on_destroy;
 
-    MinimalUpdateCB         on_update;
-    MinimalRenderCB         on_render;
-    MinimalRenderDebugCB    on_render_debug;
-    MinimalRenderGUICB      on_render_gui;
+    MinimalUpdateCB on_update;
+    MinimalRenderCB on_render;
+    MinimalRenderCB on_render_debug;
+    MinimalRenderCB on_render_gui;
 
-    uint8_t debug;
-    uint8_t vsync;
+    MinimalBool debug;
+    MinimalBool vsync;
 
     MinimalTimer timer;
 };
@@ -59,12 +57,12 @@ void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB callback);
 void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB callback);
 void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB callback);
 void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB callback);
-void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderDebugCB callback);
-void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderGUICB callback);
+void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB callback);
+void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB callback);
 
 /* --------------------------| Settings |-------------------------------- */
-void MinimalEnableDebug(MinimalApp* app, int b);
-void MinimalEnableVsync(MinimalApp* app, int b);
+void MinimalEnableDebug(MinimalApp* app, MinimalBool b);
+void MinimalEnableVsync(MinimalApp* app, MinimalBool b);
 
 void MinimalToggleDebug(MinimalApp* app);
 void MinimalToggleVsync(MinimalApp* app);
@@ -72,11 +70,12 @@ void MinimalToggleVsync(MinimalApp* app);
 uint32_t MinimalGetFps(MinimalApp* app);
 
 /* --------------------------| Input |----------------------------------- */
-uint8_t MinimalKeyPressed(uint32_t keycode);
-uint8_t MinimalKeyReleased(uint32_t  keycode);
+MinimalBool MinimalKeyPressed(uint32_t keycode);
+MinimalBool MinimalKeyReleased(uint32_t  keycode);
+MinimalBool MinimalKeyDown(uint32_t  keycode);
 
-uint8_t MinimalMouseButtonPressed(uint32_t button);
-uint8_t MinimalMouseButtonReleased(uint32_t  button);
+MinimalBool MinimalMouseButtonPressed(uint32_t button);
+MinimalBool MinimalMouseButtonReleased(uint32_t  button);
 
 void MinimalGetCursorPos(float* x, float* y);
 

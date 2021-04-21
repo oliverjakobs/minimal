@@ -1,12 +1,12 @@
 #include "MinimalUtil.h"
 
 /* --------------------------| Input |----------------------------------- */
-uint8_t MinimalKeycodeValid(uint32_t keycode)
+MinimalBool MinimalKeycodeValid(uint32_t keycode)
 {
     return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
-uint8_t MinimalMouseButtonValid(uint32_t buttoncode)
+MinimalBool MinimalMouseButtonValid(uint32_t buttoncode)
 {
     return buttoncode >= MINIMAL_MOUSE_BUTTON_1 && buttoncode <= MINIMAL_MOUSE_BUTTON_LAST;
 }

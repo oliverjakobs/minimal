@@ -16,7 +16,7 @@ static uint64_t MinimalGetTimeValue()
     return value;
 }
 
-uint8_t MinimalInit()
+MinimalBool MinimalInit()
 {
     MinimalCreateKeyTable();
 
@@ -66,7 +66,6 @@ double MinimalGetTime()
 void MinimalMakeContextCurrent(MinimalWindow* context)	{ _minimal_current_context = context; }
 MinimalWindow* MinimalGetCurrentContext()				{ return _minimal_current_context; }
 
-
 void MinimalGetVersion(int* major, int* minor, int* rev)
 {
 	if (major != NULL) *major = MINIMAL_VERSION_MAJOR;
@@ -93,7 +92,7 @@ static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
 	if (minor_str && minor) *minor = atoi(minor_str);
 }
 
-uint8_t MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version)
+MinimalBool MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version)
 {
 	app->debug = 0;
 	app->vsync = 0;
@@ -132,7 +131,7 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 	while (!MinimalShouldCloseWindow(&app->window))
 	{
 		MinimalTimerStart(&app->timer, MinimalGetTime());
-		// InputUpdate(app->window);
+		MinimalUpdateKeyStates(&app->window);
 
 		app->on_update(app, (float)app->timer.deltatime);
 
@@ -149,17 +148,17 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 	}
 }
 
-void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB cb) { app->on_load = cb; }
-void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB cb) { app->on_destroy = cb; }
-void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb) { app->on_update = cb; }
-void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render = cb; }
-void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderDebugCB cb) { app->on_render_debug = cb; }
-void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderGUICB cb) { app->on_render_gui = cb; }
+void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB cb)			{ app->on_load = cb; }
+void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB cb)	{ app->on_destroy = cb; }
+void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb)		{ app->on_update = cb; }
+void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)		{ app->on_render = cb; }
+void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render_debug = cb; }
+void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_gui = cb; }
 
 /* --------------------------| Settings |-------------------------------- */
 void MinimalClose(MinimalApp* app) { MinimalCloseWindow(&app->window); }
-void MinimalEnableDebug(MinimalApp* app, int b) { app->debug = b; }
-void MinimalEnableVsync(MinimalApp* app, int b) { /* glfwSwapInterval(b); */ app->vsync = b; }
+void MinimalEnableDebug(MinimalApp* app, MinimalBool b) { app->debug = b; }
+void MinimalEnableVsync(MinimalApp* app, MinimalBool b) { MinimalSwapIntervalWGL(b); app->vsync = b; }
 
 void MinimalToggleDebug(MinimalApp* app) { MinimalEnableDebug(app, !app->debug); }
 void MinimalToggleVsync(MinimalApp* app) { MinimalEnableVsync(app, !app->vsync); }
@@ -167,25 +166,31 @@ void MinimalToggleVsync(MinimalApp* app) { MinimalEnableVsync(app, !app->vsync);
 uint32_t MinimalGetFps(MinimalApp* app)	{ return app->timer.fps; }
 
 /* --------------------------| Input |----------------------------------- */
-uint8_t MinimalKeyPressed(uint32_t keycode)
+MinimalBool MinimalKeyPressed(uint32_t keycode)
 {
-	int8_t state = MinimalGetKeyState(_minimal_current_context, keycode);
-	return state >= 0 && (state == MINIMAL_PRESS || state == MINIMAL_REPEAT);
+	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	return state && state->current == MINIMAL_PRESS && state->previous == MINIMAL_RELEASE;
 }
 
-uint8_t MinimalKeyReleased(uint32_t keycode)
+MinimalBool MinimalKeyReleased(uint32_t keycode)
 {
-	int8_t state = MinimalGetKeyState(_minimal_current_context, keycode);
-	return state >= 0 && MinimalGetKeyState(_minimal_current_context, keycode) == MINIMAL_RELEASE;
+	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	return state && state->current == MINIMAL_RELEASE && state->previous == MINIMAL_PRESS;
 }
 
-uint8_t MinimalMouseButtonPressed(uint32_t button)
+MinimalBool MinimalKeyDown(uint32_t keycode)
+{
+	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	return state && state->action == MINIMAL_PRESS;
+}
+
+MinimalBool MinimalMouseButtonPressed(uint32_t button)
 {
 	int8_t state = MinimalGetMouseButtonState(_minimal_current_context, button);
 	return state >= 0 && MINIMAL_PRESS;
 }
 
-uint8_t MinimalMouseButtonReleased(uint32_t button)
+MinimalBool MinimalMouseButtonReleased(uint32_t button)
 {
 	int8_t state = MinimalGetMouseButtonState(_minimal_current_context, button);
 	return state >= 0 && MINIMAL_RELEASE;

@@ -10,11 +10,11 @@
 
 #define MINIMAL_WNDCLASSNAME L"MINIMALWNDCLASS"
 
-uint8_t MinimalRegisterWindowClass();
-uint8_t MinimalUnregisterWindowClass();
+MinimalBool MinimalRegisterWindowClass();
+MinimalBool MinimalUnregisterWindowClass();
 
-uint8_t MinimalCreateHelperWindow();
-uint8_t MinimalDestroyHelperWindow();
+MinimalBool MinimalCreateHelperWindow();
+MinimalBool MinimalDestroyHelperWindow();
 HWND MinimalGetHelperWindow();
 
 typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, long w, long h);
@@ -32,10 +32,10 @@ struct MinimalWindow
     HDC         device_context;
     HGLRC       render_context;
 
-    uint8_t key_state[MINIMAL_KEY_LAST + 1];
+    MinimalInputState key_state[MINIMAL_KEY_LAST + 1];
     uint8_t mouse_buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
 
-    uint8_t should_close;
+    MinimalBool should_close;
 
     /* callbacks */
     struct
@@ -60,8 +60,8 @@ typedef struct
     int gl_minor;
 } MinimalWindowConfig;
 
-uint8_t MinimalCreateWindow(MinimalWindow* window, const MinimalWindowConfig* config);
-uint8_t MinimalDestroyWindow(MinimalWindow* window);
+MinimalBool MinimalCreateWindow(MinimalWindow* window, const MinimalWindowConfig* config);
+MinimalBool MinimalDestroyWindow(MinimalWindow* window);
 
 void MinimalPollEvent(MinimalWindow* window);
 void MinimalSwapBuffer(MinimalWindow* window);
@@ -71,7 +71,7 @@ void MinimalSetWindowTitle(MinimalWindow* window, const char* str);
 uint32_t MinimalGetWindowWidth(const MinimalWindow* window);
 uint32_t MinimalGetWindowHeigth(const MinimalWindow* window);
 
-uint8_t MinimalShouldCloseWindow(const MinimalWindow* window);
+MinimalBool MinimalShouldCloseWindow(const MinimalWindow* window);
 void MinimalCloseWindow(MinimalWindow* window);
 
 void MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size);
@@ -88,7 +88,9 @@ void MinimalCreateKeyTable();
 /* tanslate win32 virtual key codes to minimal key codes */
 uint32_t MinimalTranslateKey(uint32_t scancode);
 
-int8_t MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode);
+void MinimalUpdateKeyStates(MinimalWindow* window);
+
+const MinimalInputState* MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode);
 int8_t MinimalGetMouseButtonState(const MinimalWindow* window, uint32_t button);
 
 #endif // !MINIMAL_WINDOW_H

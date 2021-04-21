@@ -2,13 +2,13 @@
 
 #include "MinimalWindow.h"
 
-static uint8_t _min_wgl_initialized = 0;
+static MinimalBool _min_wgl_initialized = 0;
 
 static wglCreateContextAttribsARB_T    _min_wglCreateContextAttribsARB = NULL;
 static wglSwapIntervalEXT_T            _min_wglSwapIntervalEXT = NULL;
 static wglChoosePixelFormatARB_T       _min_wglChoosePixelFormatARB = NULL;
 
-uint8_t MinimalInitWGL()
+MinimalBool MinimalInitWGL()
 {
     if (_min_wgl_initialized) return MINIMAL_OK;
 
@@ -90,7 +90,7 @@ static int MinimalChoosePixelFormat(MinimalWindow* window)
     return pixel_format;
 }
 
-uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
+MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
 {
     window->device_context = GetDC(window->handle);
     if (!window->device_context)
@@ -139,9 +139,9 @@ uint8_t MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
     return MINIMAL_OK;
 }
 
-uint8_t MinimalDestroyContextWGL(MinimalWindow* window)
+MinimalBool MinimalDestroyContextWGL(MinimalWindow* window)
 {
-    uint8_t status = MINIMAL_OK;
+    MinimalBool status = MINIMAL_OK;
     if (window->render_context)
     {
         if (!wglMakeCurrent(NULL, NULL))
@@ -167,4 +167,9 @@ uint8_t MinimalDestroyContextWGL(MinimalWindow* window)
     window->device_context = NULL;
 
     return status;
+}
+
+void MinimalSwapIntervalWGL(int interval)
+{
+    if (_min_wglSwapIntervalEXT) _min_wglSwapIntervalEXT(interval);
 }
