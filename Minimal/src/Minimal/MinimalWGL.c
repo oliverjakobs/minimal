@@ -4,7 +4,7 @@
 
 static MinimalBool _min_wgl_initialized = 0;
 
-static wglCreateContextAttribsARB_T    _min_wglCreateContextAttribsARB = NULL;
+static wglCreateContextAttribsARB_T    _min_wglCreateContextAttrARB = NULL;
 static wglSwapIntervalEXT_T            _min_wglSwapIntervalEXT = NULL;
 static wglChoosePixelFormatARB_T       _min_wglChoosePixelFormatARB = NULL;
 
@@ -26,14 +26,14 @@ MinimalBool MinimalInitWGL()
 
     if (!SetPixelFormat(dc, ChoosePixelFormat(dc, &pfd), &pfd))
     {
-        MINIMAL_ERROR("WGL: Failed to set pixel format for dummy context");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL: Failed to set pixel format for dummy context");
         return MINIMAL_FAIL;
     }
 
     rc = wglCreateContext(dc);
     if (!rc)
     {
-        MINIMAL_ERROR("WGL: Failed to create dummy context");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL: Failed to create dummy context");
         return MINIMAL_FAIL;
     }
 
@@ -42,13 +42,13 @@ MinimalBool MinimalInitWGL()
 
     if (!wglMakeCurrent(dc, rc))
     {
-        MINIMAL_ERROR("WGL: Failed to make dummy context current");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL: Failed to make dummy context current");
         wglMakeCurrent(pdc, prc);
         wglDeleteContext(rc);
         return MINIMAL_FAIL;
     }
 
-    _min_wglCreateContextAttribsARB = (wglCreateContextAttribsARB_T)wglGetProcAddress("wglCreateContextAttribsARB");
+    _min_wglCreateContextAttrARB = (wglCreateContextAttribsARB_T)wglGetProcAddress("wglCreateContextAttribsARB");
     _min_wglSwapIntervalEXT =         (wglSwapIntervalEXT_T)wglGetProcAddress("wglSwapIntervalEXT");
     _min_wglChoosePixelFormatARB =    (wglChoosePixelFormatARB_T)wglGetProcAddress("wglChoosePixelFormatARB");
 
@@ -83,7 +83,7 @@ static int MinimalChoosePixelFormat(MinimalWindow* window)
     _min_wglChoosePixelFormatARB(window->device_context, pf_attribs, 0, 1, &pixel_format, &num_formats);
     if (!num_formats)
     {
-        MINIMAL_ERROR("Could not find a suitable pixel format");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Could not find a suitable pixel format");
         return 0;
     }
 
@@ -95,7 +95,7 @@ MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
     window->device_context = GetDC(window->handle);
     if (!window->device_context)
     {
-        MINIMAL_ERROR("Failed to retrieve device context handle");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to retrieve device context handle");
         return MINIMAL_FAIL;
     }
 
@@ -105,13 +105,13 @@ MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
     PIXELFORMATDESCRIPTOR pfd;
     if (!DescribePixelFormat(window->device_context, pixel_format, sizeof(pfd), &pfd))
     {
-        MINIMAL_ERROR("Failed to retrieve PFD");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to retrieve PFD");
         return MINIMAL_FAIL;
     }
 
     if (!SetPixelFormat(window->device_context, pixel_format, &pfd))
     {
-        MINIMAL_ERROR("Failed to set pixel format");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to set pixel format");
         return MINIMAL_FAIL;
     }
     // Specify that we want to create an OpenGL 3.3 core profile context
@@ -123,16 +123,16 @@ MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor)
         0,
     };
 
-    window->render_context = _min_wglCreateContextAttribsARB(window->device_context, 0, gl_attribs);
+    window->render_context = _min_wglCreateContextAttrARB(window->device_context, 0, gl_attribs);
     if (!window->render_context)
     {
-        MINIMAL_ERROR("Failed to create render context");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to create render context");
         return MINIMAL_FAIL;
     }
 
     if (!wglMakeCurrent(window->device_context, window->render_context))
     {
-        MINIMAL_ERROR("Failed to make render context current");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to make render context current");
         return MINIMAL_FAIL;
     }
 
@@ -146,20 +146,20 @@ MinimalBool MinimalDestroyContextWGL(MinimalWindow* window)
     {
         if (!wglMakeCurrent(NULL, NULL))
         {
-            MINIMAL_ERROR("Failed to realease render context");
+            MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to realease render context");
             status = MINIMAL_FAIL;
         }
 
         if (!wglDeleteContext(window->render_context))
         {
-            MINIMAL_ERROR("Failed to delete render context");
+            MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to delete render context");
             status = MINIMAL_FAIL;
         }
     }
 
     if (window->device_context && !ReleaseDC(window->handle, window->device_context))
     {
-        MINIMAL_ERROR("Failed to release device context");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to release device context");
         status = MINIMAL_FAIL;
     }
 

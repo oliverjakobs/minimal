@@ -52,15 +52,11 @@ struct MinimalWindow
 
 typedef struct
 {
-    const char* title;
-    uint32_t width;
-    uint32_t height;
-
     int gl_major;
     int gl_minor;
 } MinimalWindowConfig;
 
-MinimalBool MinimalCreateWindow(MinimalWindow* window, const MinimalWindowConfig* config);
+MinimalWindow* MinimalCreateWindow(const char* title, uint32_t w, uint32_t h, const MinimalWindowConfig* config);
 MinimalBool MinimalDestroyWindow(MinimalWindow* window);
 
 void MinimalPollEvent(MinimalWindow* window);
@@ -82,7 +78,7 @@ void MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button)
 void MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll);
 void MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos);
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 void MinimalCreateKeyTable();
 
 /* tanslate win32 virtual key codes to minimal key codes */

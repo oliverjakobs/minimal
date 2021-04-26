@@ -137,7 +137,7 @@ MinimalBool MinimalRegisterWindowClass()
 
     if (!RegisterClassExW(&wnd_class))
     {
-        MINIMAL_ERROR("Failed to register WindowClass");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to register WindowClass");
         return MINIMAL_FAIL;
     }
     return MINIMAL_OK;
@@ -147,7 +147,7 @@ MinimalBool MinimalUnregisterWindowClass()
 {
     if (!UnregisterClassW(L"MinimalWindowClass", GetModuleHandleW(NULL)))
     {
-        MINIMAL_ERROR("Failed to unregister WindowClass");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to unregister WindowClass");
         return MINIMAL_FAIL;
     }
     return MINIMAL_OK;
@@ -157,14 +157,15 @@ static HWND _minimal_helper_hwnd;
 
 MinimalBool MinimalCreateHelperWindow()
 {
+    HINSTANCE instance = GetModuleHandleW(NULL);
+    LPCWSTR class_name = MINIMAL_WNDCLASSNAME;
     DWORD ex_style = WS_EX_OVERLAPPEDWINDOW;
     DWORD style = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-    _minimal_helper_hwnd = CreateWindowExW(ex_style, MINIMAL_WNDCLASSNAME, NULL, style,
-            0, 0, 1, 1, 0, 0, GetModuleHandleW(NULL), 0);
+    _minimal_helper_hwnd = CreateWindowExW(ex_style, class_name, NULL, style, 0, 0, 1, 1, 0, 0, instance, 0);
 
     if (!_minimal_helper_hwnd)
     {
-        MINIMAL_ERROR("Failed to create helper window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to create helper window");
         return MINIMAL_FAIL;
     }
 
@@ -182,7 +183,7 @@ MinimalBool MinimalDestroyHelperWindow()
 {
     if (_minimal_helper_hwnd && !DestroyWindow(_minimal_helper_hwnd))
     {
-        MINIMAL_ERROR("Failed to destroy helper window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to destroy helper window");
         return MINIMAL_FAIL;
     }
 
@@ -195,21 +196,24 @@ HWND MinimalGetHelperWindow()
     return _minimal_helper_hwnd;
 }
 
-MinimalBool MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* config)
+MinimalWindow* MinimalCreateWindow(const char* title, uint32_t w, uint32_t h, const MinimalWindowConfig* config)
 {
+    MinimalWindow* wnd = MinimalAlloc(sizeof(MinimalWindow));
+
     wnd->instance = GetModuleHandleW(NULL);
 
-    RECT rect = { .right = config->width, .bottom = config->height };
+    RECT rect = { .right = w, .bottom = h };
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
     AdjustWindowRect(&rect, style, 0);
 
     int x = CW_USEDEFAULT, y = CW_USEDEFAULT;
-    int w = rect.right - rect.left, h = rect.bottom - rect.top;
+    w = rect.right - rect.left;
+    h = rect.bottom - rect.top;
 
     wnd->handle = CreateWindowExW(0, MINIMAL_WNDCLASSNAME, NULL, style, x, y, w, h, 0, 0, wnd->instance, 0);
     wnd->should_close = 0;
 
-    MinimalSetWindowTitle(wnd, config->title);
+    MinimalSetWindowTitle(wnd, title);
     SetPropW(wnd->handle, L"Minimal", wnd);
 
     memset(wnd->key_state, 0, sizeof(wnd->key_state));
@@ -223,7 +227,12 @@ MinimalBool MinimalCreateWindow(MinimalWindow* wnd, const MinimalWindowConfig* c
     wnd->callbacks.scroll = NULL;
     wnd->callbacks.cursor_pos = NULL;
 
-    return MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor);
+    if (!MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor))
+    {
+        MinimalDestroyWindow(wnd);
+        wnd = NULL;
+    }
+    return wnd;
 }
 
 MinimalBool MinimalDestroyWindow(MinimalWindow* wnd)
@@ -232,12 +241,11 @@ MinimalBool MinimalDestroyWindow(MinimalWindow* wnd)
 
     if (wnd->handle && !DestroyWindow(wnd->handle))
     {
-        MINIMAL_ERROR("Failed to destroy window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to destroy window");
         status = MINIMAL_FAIL;
     }
 
-    wnd->handle = NULL;
-    wnd->instance = NULL;
+    MinimalFree(wnd);
 
     return status;
 }
@@ -288,7 +296,7 @@ void MinimalSetScrollCallback(MinimalWindow* wnd, MinimalScrollCB cb)       { wn
 void MinimalSetCursorPosCallback(MinimalWindow* wnd, MinimalCursorPosCB cb) { wnd->callbacks.cursor_pos = cb; }
 
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 static uint32_t minimal_key_table[512];
 
 void MinimalCreateKeyTable()

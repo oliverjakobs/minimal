@@ -16,10 +16,10 @@
 typedef struct MinimalWindow MinimalWindow;
 typedef uint8_t MinimalBool;
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 #define MINIMAL_KEY_UNKNOWN			-1
 
- /* Function keys */
+ /* function keys */
 #define MINIMAL_KEY_ESCAPE			0
 #define MINIMAL_KEY_F1				1
 #define MINIMAL_KEY_F2				2
@@ -175,7 +175,7 @@ typedef struct
 MinimalBool MinimalKeycodeValid(uint32_t keycode);
 MinimalBool MinimalMouseButtonValid(uint32_t buttoncode);
 
-/* --------------------------| Logging |--------------------------------- */
+/* --------------------------| logging |--------------------------------- */
 #ifdef MINIMAL_ENABLE_LOGGING
 
 #define MINIMAL_TRACE(s, ...)		MinimalLoggerPrint(stdout, MINIMAL_LOG_TRACE, s, __VA_ARGS__)
@@ -204,8 +204,15 @@ typedef enum
 } MinimalLogLevel;
 
 void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* fmt, ...);
+void MinimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* fmt, va_list args);
 
-/* --------------------------| Timer |----------------------------------- */
+/* --------------------------| error callback |-------------------------- */
+typedef void(*MinimalErrorCB)(MinimalLogLevel level, const char* fmt, va_list args);
+
+void MinimalSetErrorCallback(MinimalErrorCB callback);
+void MinimalErrorCallback(MinimalLogLevel level, const char* fmt, ...);
+
+/* --------------------------| timer |----------------------------------- */
 typedef struct
 {
     uint32_t frames;
@@ -220,5 +227,14 @@ void MinimalTimerReset(MinimalTimer* timer);
 
 void MinimalTimerStart(MinimalTimer* timer, double seconds);
 void MinimalTimerEnd(MinimalTimer* timer, double seconds);
+
+/* --------------------------| memory |---------------------------------- */
+typedef void* (*MinimalAllocCB) (void* user_data, size_t size);
+typedef void  (*MinimalFreeCB)  (void* user_data, void* block);
+
+/* To enable custom memory allocation call before MinimalLoad */
+void MinimalSetAllocator(void* allocator, MinimalAllocCB alloc, MinimalFreeCB free);
+void* MinimalAlloc(size_t size);
+void MinimalFree(void* block);
 
 #endif // !MINIMAL_UTIL_H

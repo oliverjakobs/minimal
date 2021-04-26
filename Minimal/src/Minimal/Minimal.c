@@ -1,13 +1,12 @@
 #include "Minimal.h"
 
+#include "MinimalWindow.h"
 #include "MinimalWGL.h"
 
-#include "toolbox/tb_str.h"
+static uint64_t     _minimal_timer_frequency = 0;
+static uint64_t     _minimal_timer_offset = 0;
 
-static uint64_t     _minimal_timer_frequency;
-static uint64_t     _minimal_timer_offset;
-
-static MinimalWindow* _minimal_current_context;
+static MinimalWindow* _minimal_current_context = NULL;
 
 static uint64_t MinimalGetTimeValue()
 {
@@ -23,7 +22,7 @@ MinimalBool MinimalInit()
     /* init timer */
     if (!QueryPerformanceFrequency((LARGE_INTEGER*)&_minimal_timer_frequency))
     {
-        MINIMAL_ERROR("High-resolution performance counter is not supported");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "High-resolution performance counter is not supported");
         return MINIMAL_FAIL;
     }
 
@@ -32,19 +31,19 @@ MinimalBool MinimalInit()
 
 	if (!MinimalRegisterWindowClass())
 	{
-		MINIMAL_ERROR("Failed to register window class");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to register window class");
 		return MINIMAL_FAIL;
 	}
 
 	if (!MinimalCreateHelperWindow())
 	{
-		MINIMAL_ERROR("Failed to create helper window");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to create helper window");
 		return MINIMAL_FAIL;
 	}
 
 	if (!MinimalInitWGL())
 	{
-		MINIMAL_ERROR("Failed to initialize WGL");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to initialize WGL");
 		return MINIMAL_FAIL;
 	}
 
@@ -81,7 +80,7 @@ const char* MinimalGetVersionString(void)
 	return MINIMAL_MAKE_VERSION_STR(MINIMAL_VERSION_MAJOR, MINIMAL_VERSION_MINOR, MINIMAL_VERSION_REVISION);
 }
 
-/* --------------------------| Minimal App |----------------------------- */
+/* --------------------------| minimal app |----------------------------- */
 static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
 {
 	const char* sep = ".";
@@ -92,29 +91,30 @@ static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
 	if (minor_str && minor) *minor = atoi(minor_str);
 }
 
-MinimalBool MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version)
+MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version)
 {
 	app->debug = 0;
 	app->vsync = 0;
 
-	/* Minimal initialization */
+	/* minimal initialization */
 	if (!MinimalInit())
 	{
-		MINIMAL_ERROR("[Minimal] Failed to initialize Minimal");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "[Minimal] Failed to initialize Minimal");
 		return MINIMAL_FAIL;
 	}
 
-	MinimalWindowConfig wnd_config = { .title = title, .width = width, .height = height };
+	MinimalWindowConfig wnd_config = { 0 };
 	MinimalGetGLVersion(gl_version, &wnd_config.gl_major, &wnd_config.gl_minor);
 
 	/* creating the window */
-	if (!MinimalCreateWindow(&app->window, &wnd_config))
+	app->window = MinimalCreateWindow(title, w, h, &wnd_config);
+	if (!app->window)
 	{
-		MINIMAL_ERROR("[Minimal] Failed to create Minimal window");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "[Minimal] Failed to create Minimal window");
 		return MINIMAL_FAIL;
 	}
 
-	MinimalMakeContextCurrent(&app->window);
+	MinimalMakeContextCurrent(app->window);
 	MinimalTimerReset(&app->timer);
 
 	return (app->on_load) ? app->on_load(app) : MINIMAL_OK;
@@ -123,15 +123,15 @@ MinimalBool MinimalLoad(MinimalApp* app, const char* title, int width, int heigh
 void MinimalDestroy(MinimalApp* app)
 {
 	if (app->on_destroy) app->on_destroy(app);
-	MinimalDestroyWindow(&app->window);
+	MinimalDestroyWindow(app->window);
 }
 
 void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 {
-	while (!MinimalShouldCloseWindow(&app->window))
+	while (!MinimalShouldCloseWindow(app->window))
 	{
 		MinimalTimerStart(&app->timer, MinimalGetTime());
-		MinimalUpdateKeyStates(&app->window);
+		MinimalUpdateKeyStates(app->window);
 
 		app->on_update(app, (float)app->timer.deltatime);
 
@@ -141,8 +141,8 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 
 		if (app->debug) app->on_render_debug(app);
 
-		MinimalPollEvent(&app->window);
-		MinimalSwapBuffer(&app->window);
+		MinimalPollEvent(app->window);
+		MinimalSwapBuffer(app->window);
 
 		MinimalTimerEnd(&app->timer, MinimalGetTime());
 	}
@@ -155,8 +155,8 @@ void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)		{ app->on_re
 void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render_debug = cb; }
 void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_gui = cb; }
 
-/* --------------------------| Settings |-------------------------------- */
-void MinimalClose(MinimalApp* app) { MinimalCloseWindow(&app->window); }
+/* --------------------------| settings |-------------------------------- */
+void MinimalClose(MinimalApp* app) { MinimalCloseWindow(app->window); }
 void MinimalEnableDebug(MinimalApp* app, MinimalBool b) { app->debug = b; }
 void MinimalEnableVsync(MinimalApp* app, MinimalBool b) { MinimalSwapIntervalWGL(b); app->vsync = b; }
 
@@ -165,7 +165,7 @@ void MinimalToggleVsync(MinimalApp* app) { MinimalEnableVsync(app, !app->vsync);
 
 uint32_t MinimalGetFps(MinimalApp* app)	{ return app->timer.fps; }
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 MinimalBool MinimalKeyPressed(uint32_t keycode)
 {
 	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);

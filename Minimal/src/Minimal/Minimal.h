@@ -1,9 +1,9 @@
 #ifndef MINIMAL_H
 #define MINIMAL_H
 
-#include "MinimalWindow.h"
+#include "MinimalUtil.h"
 
-/* Minimal version numbers */
+/* minimal version numbers */
 #define MINIMAL_VERSION_MAJOR       1
 #define MINIMAL_VERSION_MINOR       0
 #define MINIMAL_VERSION_REVISION    0
@@ -19,7 +19,7 @@ MinimalWindow* MinimalGetCurrentContext();
 void MinimalGetVersion(int* major, int* minor, int* rev);
 const char* MinimalGetVersionString(void);
 
-/* --------------------------| Minimal App |----------------------------- */
+/* --------------------------| minimal app |----------------------------- */
 typedef struct MinimalApp MinimalApp;
 
 typedef MinimalBool (*MinimalLoadCB)    (MinimalApp* app);
@@ -30,7 +30,7 @@ typedef void (*MinimalRenderCB) (MinimalApp* app);
 
 struct MinimalApp
 {
-    MinimalWindow window;
+    MinimalWindow* window;
 
     MinimalLoadCB       on_load;
     MinimalDestroyCB    on_destroy;
@@ -46,10 +46,10 @@ struct MinimalApp
     MinimalTimer timer;
 };
 
-uint8_t MinimalLoad(MinimalApp* app, const char* title, int width, int height, char* gl_version);
+uint8_t MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version);
 void MinimalDestroy(MinimalApp* app);
 
-/* --------------------------| Game Loop |------------------------------- */
+/* --------------------------| game loop |------------------------------- */
 void MinimalRun(MinimalApp* app, void(*clear_buffer)());
 void MinimalClose(MinimalApp* app);
 
@@ -60,7 +60,7 @@ void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB callback);
 void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB callback);
 void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB callback);
 
-/* --------------------------| Settings |-------------------------------- */
+/* --------------------------| settings |-------------------------------- */
 void MinimalEnableDebug(MinimalApp* app, MinimalBool b);
 void MinimalEnableVsync(MinimalApp* app, MinimalBool b);
 
@@ -69,7 +69,7 @@ void MinimalToggleVsync(MinimalApp* app);
 
 uint32_t MinimalGetFps(MinimalApp* app);
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 MinimalBool MinimalKeyPressed(uint32_t keycode);
 MinimalBool MinimalKeyReleased(uint32_t  keycode);
 MinimalBool MinimalKeyDown(uint32_t  keycode);

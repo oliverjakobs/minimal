@@ -1,6 +1,6 @@
 #include "MinimalUtil.h"
 
-/* --------------------------| Input |----------------------------------- */
+/* --------------------------| input |----------------------------------- */
 MinimalBool MinimalKeycodeValid(uint32_t keycode)
 {
     return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
@@ -11,7 +11,7 @@ MinimalBool MinimalMouseButtonValid(uint32_t buttoncode)
     return buttoncode >= MINIMAL_MOUSE_BUTTON_1 && buttoncode <= MINIMAL_MOUSE_BUTTON_LAST;
 }
 
-/* --------------------------| Logging |--------------------------------- */
+/* --------------------------| logging |--------------------------------- */
 #define MINIMAL_LOG_BLACK       "\x1b[30m"
 #define MINIMAL_LOG_RED         "\x1b[31m"
 #define MINIMAL_LOG_GREEN       "\x1b[32m"
@@ -30,7 +30,7 @@ MinimalBool MinimalMouseButtonValid(uint32_t buttoncode)
 #define MINIMAL_LOG_BG_CYAN     "\x1b[46m"
 #define MINIMAL_LOG_BG_WHITE    "\x1b[47m"
 
-#define MINIMAL_LOG_RESET       "\x1b[0m" /* No color */
+#define MINIMAL_LOG_RESET       "\x1b[0m" /* no color */
 
 static const char* MinimalLoggerGetLevelStr(MinimalLogLevel level)
 {
@@ -47,17 +47,41 @@ static const char* MinimalLoggerGetLevelStr(MinimalLogLevel level)
 
 void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* fmt, ...)
 {
-    fprintf(stream, MinimalLoggerGetLevelStr(level));
-
     va_list arg;
     va_start(arg, fmt);
-    vfprintf(stream, fmt, arg);
+    MinimalLoggerPrintV(stream, level, fmt, arg);
     va_end(arg);
+}
 
+void MinimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* fmt, va_list args)
+{
+    fprintf(stream, MinimalLoggerGetLevelStr(level));
+    vfprintf(stream, fmt, args);
     fprintf(stream, "\n");
 }
 
-/* --------------------------| Timer |----------------------------------- */
+/* --------------------------| error callback |-------------------------- */
+static void MinimalDefaultErrorCallback(MinimalLogLevel level, const char* fmt, va_list args)
+{
+    MinimalLoggerPrintV(stdout, level, fmt, args);
+}
+
+static MinimalErrorCB _minimal_error_callback = MinimalDefaultErrorCallback;
+
+void MinimalSetErrorCallback(MinimalErrorCB callback)
+{
+    _minimal_error_callback = callback;
+}
+
+void MinimalErrorCallback(MinimalLogLevel level, const char* fmt, ...)
+{
+    va_list arg;
+    va_start(arg, fmt);
+    _minimal_error_callback(level, fmt, arg);
+    va_end(arg);
+}
+
+/* --------------------------| timer |----------------------------------- */
 void MinimalTimerReset(MinimalTimer* timer)
 {
     timer->seconds = 0.0;
@@ -83,4 +107,28 @@ void MinimalTimerEnd(MinimalTimer* timer, double seconds)
         timer->fps = timer->frames;
         timer->frames = 0;
     }
+}
+
+/* --------------------------| memory |---------------------------------- */
+static void* _minimal_allocator = NULL;
+static MinimalAllocCB _minimal_alloc = NULL;
+static MinimalFreeCB _minimal_free = NULL;
+
+void MinimalSetAllocator(void* allocator, MinimalAllocCB alloc_cb, MinimalFreeCB free_cb)
+{
+    _minimal_allocator = allocator;
+    _minimal_alloc = alloc_cb;
+    _minimal_free = free_cb;
+}
+
+void* MinimalAlloc(size_t size)
+{
+    if (_minimal_alloc)	return _minimal_alloc(_minimal_allocator, size);
+    else				return malloc(size);
+}
+
+void MinimalFree(void* block)
+{
+    if (_minimal_free)	_minimal_free(_minimal_allocator, block);
+    else				free(block);
 }
