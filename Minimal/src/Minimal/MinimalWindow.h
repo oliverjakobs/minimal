@@ -54,6 +54,8 @@ typedef struct
 {
     int gl_major;
     int gl_minor;
+
+    int context_flags;
 } MinimalWindowConfig;
 
 MinimalWindow* MinimalCreateWindow(const char* title, uint32_t w, uint32_t h, const MinimalWindowConfig* config);

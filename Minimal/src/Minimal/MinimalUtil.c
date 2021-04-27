@@ -61,9 +61,12 @@ void MinimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 }
 
 /* --------------------------| error callback |-------------------------- */
-static void MinimalDefaultErrorCallback(MinimalLogLevel level, const char* fmt, va_list args)
+static void MinimalDefaultErrorCallback(MinimalLogLevel level, const char* modul, const char* fmt, va_list args)
 {
-    MinimalLoggerPrintV(stdout, level, fmt, args);
+    printf(MinimalLoggerGetLevelStr(level));
+    printf("[%s] ", modul);
+    vprintf(fmt, args);
+    printf("\n");
 }
 
 static MinimalErrorCB _minimal_error_callback = MinimalDefaultErrorCallback;
@@ -73,11 +76,11 @@ void MinimalSetErrorCallback(MinimalErrorCB callback)
     _minimal_error_callback = callback;
 }
 
-void MinimalErrorCallback(MinimalLogLevel level, const char* fmt, ...)
+void MinimalErrorCallback(MinimalLogLevel level, const char* modul, const char* fmt, ...)
 {
     va_list arg;
     va_start(arg, fmt);
-    _minimal_error_callback(level, fmt, arg);
+    _minimal_error_callback(level, modul, fmt, arg);
     va_end(arg);
 }
 

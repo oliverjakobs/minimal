@@ -207,10 +207,10 @@ void MinimalLoggerPrint(FILE* const stream, MinimalLogLevel level, const char* f
 void MinimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* fmt, va_list args);
 
 /* --------------------------| error callback |-------------------------- */
-typedef void(*MinimalErrorCB)(MinimalLogLevel level, const char* fmt, va_list args);
+typedef void(*MinimalErrorCB)(MinimalLogLevel level, const char* modul, const char* fmt, va_list args);
 
 void MinimalSetErrorCallback(MinimalErrorCB callback);
-void MinimalErrorCallback(MinimalLogLevel level, const char* fmt, ...);
+void MinimalErrorCallback(MinimalLogLevel level, const char* modul, const char* fmt, ...);
 
 /* --------------------------| timer |----------------------------------- */
 typedef struct

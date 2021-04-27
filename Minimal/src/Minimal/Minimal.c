@@ -1,7 +1,7 @@
 #include "Minimal.h"
 
-#include "MinimalWindow.h"
 #include "MinimalWGL.h"
+#include "MinimalWindow.h"
 
 static uint64_t     _minimal_timer_frequency = 0;
 static uint64_t     _minimal_timer_offset = 0;
@@ -22,28 +22,19 @@ MinimalBool MinimalInit()
     /* init timer */
     if (!QueryPerformanceFrequency((LARGE_INTEGER*)&_minimal_timer_frequency))
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "High-resolution performance counter is not supported");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Timer", "High-resolution performance counter is not supported");
         return MINIMAL_FAIL;
     }
 
     _minimal_timer_offset = MinimalGetTimeValue();
     _minimal_current_context = NULL;
 
-	if (!MinimalRegisterWindowClass())
-	{
-		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to register window class");
-		return MINIMAL_FAIL;
-	}
-
-	if (!MinimalCreateHelperWindow())
-	{
-		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to create helper window");
-		return MINIMAL_FAIL;
-	}
+	if (!MinimalRegisterWindowClass())	return MINIMAL_FAIL;
+	if (!MinimalCreateHelperWindow())	return MINIMAL_FAIL;
 
 	if (!MinimalInitWGL())
 	{
-		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to initialize WGL");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "Minimal", "Failed to initialize WGL");
 		return MINIMAL_FAIL;
 	}
 
@@ -99,18 +90,19 @@ MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t
 	/* minimal initialization */
 	if (!MinimalInit())
 	{
-		MinimalErrorCallback(MINIMAL_LOG_ERROR, "[Minimal] Failed to initialize Minimal");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "App", "Failed to initialize Minimal");
 		return MINIMAL_FAIL;
 	}
 
 	MinimalWindowConfig wnd_config = { 0 };
+	wnd_config.context_flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
 	MinimalGetGLVersion(gl_version, &wnd_config.gl_major, &wnd_config.gl_minor);
 
 	/* creating the window */
 	app->window = MinimalCreateWindow(title, w, h, &wnd_config);
 	if (!app->window)
 	{
-		MinimalErrorCallback(MINIMAL_LOG_ERROR, "[Minimal] Failed to create Minimal window");
+		MinimalErrorCallback(MINIMAL_LOG_ERROR, "App", "Failed to create Minimal window");
 		return MINIMAL_FAIL;
 	}
 

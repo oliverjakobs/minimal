@@ -137,7 +137,7 @@ MinimalBool MinimalRegisterWindowClass()
 
     if (!RegisterClassExW(&wnd_class))
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to register WindowClass");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Window", "Failed to register WindowClass");
         return MINIMAL_FAIL;
     }
     return MINIMAL_OK;
@@ -147,7 +147,7 @@ MinimalBool MinimalUnregisterWindowClass()
 {
     if (!UnregisterClassW(L"MinimalWindowClass", GetModuleHandleW(NULL)))
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to unregister WindowClass");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Window", "Failed to unregister WindowClass");
         return MINIMAL_FAIL;
     }
     return MINIMAL_OK;
@@ -165,7 +165,7 @@ MinimalBool MinimalCreateHelperWindow()
 
     if (!_minimal_helper_hwnd)
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to create helper window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Window", "Failed to create helper window");
         return MINIMAL_FAIL;
     }
 
@@ -183,7 +183,7 @@ MinimalBool MinimalDestroyHelperWindow()
 {
     if (_minimal_helper_hwnd && !DestroyWindow(_minimal_helper_hwnd))
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to destroy helper window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Window", "Failed to destroy helper window");
         return MINIMAL_FAIL;
     }
 
@@ -227,7 +227,7 @@ MinimalWindow* MinimalCreateWindow(const char* title, uint32_t w, uint32_t h, co
     wnd->callbacks.scroll = NULL;
     wnd->callbacks.cursor_pos = NULL;
 
-    if (!MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor))
+    if (!MinimalCreateContextWGL(wnd, config->gl_major, config->gl_minor, config->context_flags))
     {
         MinimalDestroyWindow(wnd);
         wnd = NULL;
@@ -241,7 +241,7 @@ MinimalBool MinimalDestroyWindow(MinimalWindow* wnd)
 
     if (wnd->handle && !DestroyWindow(wnd->handle))
     {
-        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Failed to destroy window");
+        MinimalErrorCallback(MINIMAL_LOG_ERROR, "Window", "Failed to destroy window");
         status = MINIMAL_FAIL;
     }
 
