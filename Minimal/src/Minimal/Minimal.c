@@ -127,7 +127,7 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 	while (!MinimalShouldCloseWindow(app->window))
 	{
 		MinimalTimerStart(&app->timer, MinimalGetTime());
-		MinimalUpdateKeyStates(app->window);
+		MinimalWindowUpdateKeyStates(app->window);
 
 		app->on_update(app, (float)app->timer.deltatime);
 
@@ -164,42 +164,36 @@ uint32_t MinimalGetFps(MinimalApp* app)	{ return app->timer.fps; }
 /* --------------------------| input |----------------------------------- */
 MinimalBool MinimalKeyPressed(uint32_t keycode)
 {
-	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	const MinimalInputState* state = MinimalWindowGetKeyState(_minimal_current_context, keycode);
 	return state && state->current == MINIMAL_PRESS && state->previous == MINIMAL_RELEASE;
 }
 
 MinimalBool MinimalKeyReleased(uint32_t keycode)
 {
-	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	const MinimalInputState* state = MinimalWindowGetKeyState(_minimal_current_context, keycode);
 	return state && state->current == MINIMAL_RELEASE && state->previous == MINIMAL_PRESS;
 }
 
 MinimalBool MinimalKeyDown(uint32_t keycode)
 {
-	const MinimalInputState* state = MinimalGetKeyState(_minimal_current_context, keycode);
+	const MinimalInputState* state = MinimalWindowGetKeyState(_minimal_current_context, keycode);
 	return state && state->action == MINIMAL_PRESS;
 }
 
 MinimalBool MinimalMouseButtonPressed(uint32_t button)
 {
-	int8_t state = MinimalGetMouseButtonState(_minimal_current_context, button);
+	int8_t state = MinimalWindowGetMouseButtonState(_minimal_current_context, button);
 	return state >= 0 && MINIMAL_PRESS;
 }
 
 MinimalBool MinimalMouseButtonReleased(uint32_t button)
 {
-	int8_t state = MinimalGetMouseButtonState(_minimal_current_context, button);
+	int8_t state = MinimalWindowGetMouseButtonState(_minimal_current_context, button);
 	return state >= 0 && MINIMAL_RELEASE;
 }
 
 void MinimalGetCursorPos(float* x, float* y)
 {
 	MinimalWindow* window = MinimalGetCurrentContext();
-	if (!window) return;
-
-	POINT pos = { 0 };
-	if (GetCursorPos(&pos)) ScreenToClient(window->handle, &pos);
-
-	if (x) *x = (float)pos.x;
-	if (y) *y = (float)pos.y;
+	if (window) MinimalWindowGetCursorPos(window, x, y);
 }

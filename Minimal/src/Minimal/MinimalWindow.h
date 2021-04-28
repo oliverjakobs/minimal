@@ -25,31 +25,6 @@ typedef void (*MinimalMButtonCB)    (MinimalWindow* wnd, UINT keycode, UINT acti
 typedef void (*MinimalScrollCB)     (MinimalWindow* wnd, float x_offset, float y_offset);
 typedef void (*MinimalCursorPosCB)  (MinimalWindow* wnd, float x_pos, float y_pos);
 
-struct MinimalWindow
-{
-    HINSTANCE   instance;
-    HWND        handle;
-    HDC         device_context;
-    HGLRC       render_context;
-
-    MinimalInputState key_state[MINIMAL_KEY_LAST + 1];
-    uint8_t mouse_buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
-
-    MinimalBool should_close;
-
-    /* callbacks */
-    struct
-    {
-        MinimalSizeCB       size;
-        MinimalCloseCB      close;
-        MinimalKeyCB        key;
-        MinimalCharCB       character;
-        MinimalMButtonCB    m_button;
-        MinimalScrollCB     scroll;
-        MinimalCursorPosCB  cursor_pos;
-    } callbacks;
-};
-
 typedef struct
 {
     int gl_major;
@@ -86,9 +61,17 @@ void MinimalCreateKeyTable();
 /* tanslate win32 virtual key codes to minimal key codes */
 uint32_t MinimalTranslateKey(uint32_t scancode);
 
-void MinimalUpdateKeyStates(MinimalWindow* window);
+void MinimalWindowUpdateKeyStates(MinimalWindow* window);
 
-const MinimalInputState* MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode);
-int8_t MinimalGetMouseButtonState(const MinimalWindow* window, uint32_t button);
+const MinimalInputState* MinimalWindowGetKeyState(const MinimalWindow* window, uint32_t keycode);
+int8_t MinimalWindowGetMouseButtonState(const MinimalWindow* window, uint32_t button);
+
+void MinimalWindowGetCursorPos(const MinimalWindow* window, float* x, float* y);
+
+/* --------------------------| helper |---------------------------------- */
+void  MinimalWindowSetContext(MinimalWindow* window, HDC dc, HGLRC rc);
+HWND  MinimalWindowGetHandle(const MinimalWindow* window);
+HDC   MinimalWindowGetDeviceContext(const MinimalWindow* window);
+HGLRC MinimalWindowGetRenderContext(const MinimalWindow* window);
 
 #endif // !MINIMAL_WINDOW_H

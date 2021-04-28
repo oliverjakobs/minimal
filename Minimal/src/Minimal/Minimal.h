@@ -1,12 +1,12 @@
 #ifndef MINIMAL_H
 #define MINIMAL_H
 
-#include "MinimalUtil.h"
+#include "MinimalWindow.h"
 
 /* minimal version numbers */
 #define MINIMAL_VERSION_MAJOR       1
-#define MINIMAL_VERSION_MINOR       0
-#define MINIMAL_VERSION_REVISION    3
+#define MINIMAL_VERSION_MINOR       1
+#define MINIMAL_VERSION_REVISION    0
 
 MinimalBool MinimalInit();
 void MinimalTerminate();

@@ -64,7 +64,7 @@ void MinimalTerminateWGL()
     _min_wgl_initialized = 0;
 }
 
-static int MinimalChoosePixelFormat(MinimalWindow* window)
+static int MinimalChoosePixelFormat(HDC dc)
 {
     int pf_attribs[] = {
         WGL_DRAW_TO_WINDOW_ARB,     1,
@@ -80,7 +80,7 @@ static int MinimalChoosePixelFormat(MinimalWindow* window)
 
     int pixel_format;
     UINT num_formats;
-    _min_wglChoosePixelFormatARB(window->device_context, pf_attribs, 0, 1, &pixel_format, &num_formats);
+    _min_wglChoosePixelFormatARB(dc, pf_attribs, 0, 1, &pixel_format, &num_formats);
     if (!num_formats)
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Could not find a suitable pixel format");
@@ -92,24 +92,24 @@ static int MinimalChoosePixelFormat(MinimalWindow* window)
 
 MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor, int flags)
 {
-    window->device_context = GetDC(window->handle);
-    if (!window->device_context)
+    HDC dc = GetDC(MinimalWindowGetHandle(window));
+    if (!dc)
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to retrieve device context handle");
         return MINIMAL_FAIL;
     }
 
-    int pixel_format = MinimalChoosePixelFormat(window);
+    int pixel_format = MinimalChoosePixelFormat(dc);
     if (!pixel_format) return MINIMAL_FAIL;
 
     PIXELFORMATDESCRIPTOR pfd;
-    if (!DescribePixelFormat(window->device_context, pixel_format, sizeof(pfd), &pfd))
+    if (!DescribePixelFormat(dc, pixel_format, sizeof(pfd), &pfd))
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to retrieve PFD");
         return MINIMAL_FAIL;
     }
 
-    if (!SetPixelFormat(window->device_context, pixel_format, &pfd))
+    if (!SetPixelFormat(dc, pixel_format, &pfd))
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to set pixel format");
         return MINIMAL_FAIL;
@@ -124,18 +124,20 @@ MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor,
         0,
     };
 
-    window->render_context = _min_wglCreateContextAttrARB(window->device_context, 0, gl_attribs);
-    if (!window->render_context)
+    HGLRC rc = _min_wglCreateContextAttrARB(dc, 0, gl_attribs);
+    if (!rc)
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to create render context");
         return MINIMAL_FAIL;
     }
 
-    if (!wglMakeCurrent(window->device_context, window->render_context))
+    if (!wglMakeCurrent(dc, rc))
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to make render context current");
         return MINIMAL_FAIL;
     }
+
+    MinimalWindowSetContext(window, dc, rc);
 
     return MINIMAL_OK;
 }
@@ -143,7 +145,10 @@ MinimalBool MinimalCreateContextWGL(MinimalWindow* window, int major, int minor,
 MinimalBool MinimalDestroyContextWGL(MinimalWindow* window)
 {
     MinimalBool status = MINIMAL_OK;
-    if (window->render_context)
+    HDC   dc = MinimalWindowGetDeviceContext(window);
+    HGLRC rc = MinimalWindowGetRenderContext(window);
+
+    if (rc)
     {
         if (!wglMakeCurrent(NULL, NULL))
         {
@@ -151,21 +156,20 @@ MinimalBool MinimalDestroyContextWGL(MinimalWindow* window)
             status = MINIMAL_FAIL;
         }
 
-        if (!wglDeleteContext(window->render_context))
+        if (!wglDeleteContext(rc))
         {
             MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to delete render context");
             status = MINIMAL_FAIL;
         }
     }
 
-    if (window->device_context && !ReleaseDC(window->handle, window->device_context))
+    if (dc && !ReleaseDC(MinimalWindowGetHandle(window), dc))
     {
         MinimalErrorCallback(MINIMAL_LOG_ERROR, "WGL", "Failed to release device context");
         status = MINIMAL_FAIL;
     }
 
-    window->render_context = NULL;
-    window->device_context = NULL;
+    MinimalWindowSetContext(window, NULL, NULL);
 
     return status;
 }

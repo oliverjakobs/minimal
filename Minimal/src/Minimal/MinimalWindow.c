@@ -4,6 +4,31 @@
 
 #include "MinimalWGL.h"
 
+struct MinimalWindow
+{
+    HINSTANCE   instance;
+    HWND        handle;
+    HDC         device_context;
+    HGLRC       render_context;
+
+    MinimalInputState key_state[MINIMAL_KEY_LAST + 1];
+    uint8_t mouse_buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
+
+    MinimalBool should_close;
+
+    /* callbacks */
+    struct
+    {
+        MinimalSizeCB       size;
+        MinimalCloseCB      close;
+        MinimalKeyCB        key;
+        MinimalCharCB       character;
+        MinimalMButtonCB    m_button;
+        MinimalScrollCB     scroll;
+        MinimalCursorPosCB  cursor_pos;
+    } callbacks;
+};
+
 static uint32_t MinimalGetKeyMods()
 {
     uint32_t mods = 0;
@@ -415,7 +440,7 @@ void MinimalCreateKeyTable()
 
 uint32_t MinimalTranslateKey(uint32_t scancode) { return minimal_key_table[scancode]; }
 
-void MinimalUpdateKeyStates(MinimalWindow* window)
+void MinimalWindowUpdateKeyStates(MinimalWindow* window)
 {
     for (uint32_t key = MINIMAL_KEY_ESCAPE; key <= MINIMAL_KEY_LAST; ++key)
     {
@@ -424,12 +449,32 @@ void MinimalUpdateKeyStates(MinimalWindow* window)
     }
 }
 
-const MinimalInputState* MinimalGetKeyState(const MinimalWindow* window, uint32_t keycode)
+const MinimalInputState* MinimalWindowGetKeyState(const MinimalWindow* window, uint32_t keycode)
 {
     return (window && MinimalKeycodeValid(keycode)) ? &window->key_state[keycode] : NULL;
 }
 
-int8_t MinimalGetMouseButtonState(const MinimalWindow* window, uint32_t button)
+int8_t MinimalWindowGetMouseButtonState(const MinimalWindow* window, uint32_t button)
 {
     return (window && MinimalMouseButtonValid(button)) ? window->mouse_buttons[button] : -1;
 }
+
+void MinimalWindowGetCursorPos(const MinimalWindow* window, float* x, float* y)
+{
+    POINT pos = { 0 };
+    if (GetCursorPos(&pos)) ScreenToClient(window->handle, &pos);
+
+    if (x) *x = (float)pos.x;
+    if (y) *y = (float)pos.y;
+}
+
+/* --------------------------| helper |---------------------------------- */
+void MinimalWindowSetContext(MinimalWindow* window, HDC dc, HGLRC rc)
+{
+    window->device_context = dc;
+    window->render_context = rc;
+}
+
+HWND  MinimalWindowGetHandle(const MinimalWindow* window)        { return window->handle; }
+HDC   MinimalWindowGetDeviceContext(const MinimalWindow* window) { return window->device_context; }
+HGLRC MinimalWindowGetRenderContext(const MinimalWindow* window) { return window->render_context; }
