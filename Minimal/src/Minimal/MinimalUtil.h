@@ -4,8 +4,8 @@
 #define MINIMAL_FAIL    0
 #define MINIMAL_OK      1
 
-#if _DEBUG
-#define MINIMAL_ENABLE_LOGGING
+#ifndef _DEBUG
+#define MINIMAL_DISABLE_LOGGING
 #endif
 
 #include <stdio.h>
@@ -176,7 +176,7 @@ MinimalBool MinimalKeycodeValid(uint32_t keycode);
 MinimalBool MinimalMouseButtonValid(uint32_t buttoncode);
 
 /* --------------------------| logging |--------------------------------- */
-#ifdef MINIMAL_ENABLE_LOGGING
+#ifndef MINIMAL_DISABLE_LOGGING
 
 #define MINIMAL_TRACE(s, ...)		MinimalLoggerPrint(stdout, MINIMAL_LOG_TRACE, s, __VA_ARGS__)
 #define MINIMAL_INFO(s, ...)		MinimalLoggerPrint(stdout, MINIMAL_LOG_INFO, s, __VA_ARGS__)

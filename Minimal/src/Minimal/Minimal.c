@@ -82,7 +82,7 @@ static void MinimalGetGLVersion(const char* version_str, int* major, int* minor)
 	if (minor_str && minor) *minor = atoi(minor_str);
 }
 
-MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version)
+MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl)
 {
 	app->debug = 0;
 	app->vsync = 0;
@@ -95,8 +95,12 @@ MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t
 	}
 
 	MinimalWindowConfig wnd_config = { 0 };
+
+#ifdef _DEBUG
 	wnd_config.context_flags |= WGL_CONTEXT_DEBUG_BIT_ARB;
-	MinimalGetGLVersion(gl_version, &wnd_config.gl_major, &wnd_config.gl_minor);
+#endif // _DEBUG
+
+	MinimalGetGLVersion(gl, &wnd_config.gl_major, &wnd_config.gl_minor);
 
 	/* creating the window */
 	app->window = MinimalCreateWindow(title, w, h, &wnd_config);

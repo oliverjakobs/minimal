@@ -6,7 +6,7 @@
 /* minimal version numbers */
 #define MINIMAL_VERSION_MAJOR       1
 #define MINIMAL_VERSION_MINOR       0
-#define MINIMAL_VERSION_REVISION    2
+#define MINIMAL_VERSION_REVISION    3
 
 MinimalBool MinimalInit();
 void MinimalTerminate();
@@ -25,15 +25,15 @@ typedef struct MinimalApp MinimalApp;
 typedef MinimalBool (*MinimalLoadCB)    (MinimalApp* app);
 typedef void        (*MinimalDestroyCB) (MinimalApp* app);
 
-typedef void (*MinimalUpdateCB) (MinimalApp* app, float deltatime);
-typedef void (*MinimalRenderCB) (MinimalApp* app);
+typedef void        (*MinimalUpdateCB)  (MinimalApp* app, float deltatime);
+typedef void        (*MinimalRenderCB)  (MinimalApp* app);
 
 struct MinimalApp
 {
     MinimalWindow* window;
 
-    MinimalLoadCB       on_load;
-    MinimalDestroyCB    on_destroy;
+    MinimalLoadCB    on_load;
+    MinimalDestroyCB on_destroy;
 
     MinimalUpdateCB on_update;
     MinimalRenderCB on_render;
@@ -46,7 +46,7 @@ struct MinimalApp
     MinimalTimer timer;
 };
 
-uint8_t MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version);
+uint8_t MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl);
 void MinimalDestroy(MinimalApp* app);
 
 /* --------------------------| game loop |------------------------------- */

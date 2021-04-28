@@ -99,7 +99,12 @@ MinimalBool OnLoad(MinimalApp* app)
     /* ingis initialization */
     ignisSetErrorCallback(IgnisErrorCallback);
 
-    if (!ignisInit(1))
+    int debug = 0;
+#ifdef _DEBUG
+    debug = 1;
+#endif
+
+    if (!ignisInit(debug))
     {
         MINIMAL_ERROR("[Ignis] Failed to initialize Ignis");
         return 0;

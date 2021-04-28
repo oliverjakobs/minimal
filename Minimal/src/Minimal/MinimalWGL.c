@@ -4,9 +4,9 @@
 
 static MinimalBool _min_wgl_initialized = 0;
 
-static wglCreateContextAttribsARB_T    _min_wglCreateContextAttrARB = NULL;
-static wglSwapIntervalEXT_T            _min_wglSwapIntervalEXT = NULL;
-static wglChoosePixelFormatARB_T       _min_wglChoosePixelFormatARB = NULL;
+static wglCreateContextAttribsARB_T _min_wglCreateContextAttrARB = NULL;
+static wglSwapIntervalEXT_T         _min_wglSwapIntervalEXT = NULL;
+static wglChoosePixelFormatARB_T    _min_wglChoosePixelFormatARB = NULL;
 
 MinimalBool MinimalInitWGL()
 {
