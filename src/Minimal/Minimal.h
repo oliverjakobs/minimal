@@ -18,7 +18,7 @@ void MinimalMakeContextCurrent(MinimalWindow* context);
 MinimalWindow* MinimalGetCurrentContext();
 
 void MinimalGetVersion(int* major, int* minor, int* rev);
-const char* MinimalGetVersionString(void);
+const char* MinimalGetVersionString();
 
 /* --------------------------| minimal app |----------------------------- */
 typedef struct MinimalApp MinimalApp;
