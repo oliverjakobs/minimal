@@ -2,6 +2,7 @@
 #define MINIMAL_WINDOW_H
 
 #include "MinimalUtil.h"
+#include "MinimalEvent.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -17,13 +18,15 @@ MinimalBool MinimalCreateHelperWindow();
 MinimalBool MinimalDestroyHelperWindow();
 HWND MinimalGetHelperWindow();
 
-typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, long w, long h);
+typedef void (*MinimalSizeCB)       (MinimalWindow* wnd, uint32_t w, uint32_t h);
 typedef void (*MinimalCloseCB)      (MinimalWindow* wnd);
 typedef void (*MinimalKeyCB)        (MinimalWindow* wnd, UINT keycode, UINT scancode, UINT action, UINT mods);
-typedef void (*MinimalCharCB)       (MinimalWindow* wnd, UINT keycode);
-typedef void (*MinimalMButtonCB)    (MinimalWindow* wnd, UINT keycode, UINT action, UINT mods);
-typedef void (*MinimalScrollCB)     (MinimalWindow* wnd, float x_offset, float y_offset);
-typedef void (*MinimalCursorPosCB)  (MinimalWindow* wnd, float x_pos, float y_pos);
+typedef void (*MinimalCharCB)       (MinimalWindow* wnd, UINT codepoint, UINT mods);
+typedef void (*MinimalMButtonCB)    (MinimalWindow* wnd, UINT keycode, UINT action, UINT mods, INT x, INT y);
+typedef void (*MinimalScrollCB)     (MinimalWindow* wnd, INT h, INT v);
+typedef void (*MinimalCursorPosCB)  (MinimalWindow* wnd, INT x, INT y);
+typedef void (*MinimalMaximizeCB)   (MinimalWindow* wnd, MinimalBool maximized);
+typedef void (*MinimalIconifyCB)    (MinimalWindow* wnd, MinimalBool iconified);
 
 typedef struct
 {
@@ -40,6 +43,7 @@ void MinimalPollEvent(MinimalWindow* window);
 void MinimalSwapBuffer(MinimalWindow* window);
 
 void MinimalSetWindowTitle(MinimalWindow* window, const char* str);
+void MinimalSetEventDispatch(MinimalWindow* window, void* handler, MinimalDispatchEventCB dispatch);
 
 uint32_t MinimalGetWindowWidth(const MinimalWindow* window);
 uint32_t MinimalGetWindowHeigth(const MinimalWindow* window);

@@ -110,10 +110,12 @@ MinimalBool MinimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t
 		return MINIMAL_FAIL;
 	}
 
+	MinimalSetEventDispatch(app->window, app, MinimalDispatchEvent);
+
 	MinimalMakeContextCurrent(app->window);
 	MinimalTimerReset(&app->timer);
 
-	return (app->on_load) ? app->on_load(app) : MINIMAL_OK;
+	return (app->on_load) ? app->on_load(app, w, h) : MINIMAL_OK;
 }
 
 void MinimalDestroy(MinimalApp* app)
@@ -144,22 +146,31 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 	}
 }
 
+void MinimalClose(MinimalApp* app) { MinimalCloseWindow(app->window); }
+
 void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB cb)			{ app->on_load = cb; }
 void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB cb)	{ app->on_destroy = cb; }
+void MinimalSetEventCallback(MinimalApp* app, MinimalEventCB cb)		{ app->on_event = cb; }
 void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb)		{ app->on_update = cb; }
 void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)		{ app->on_render = cb; }
 void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render_debug = cb; }
 void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_gui = cb; }
 
 /* --------------------------| settings |-------------------------------- */
-void MinimalClose(MinimalApp* app) { MinimalCloseWindow(app->window); }
-void MinimalEnableDebug(MinimalApp* app, MinimalBool b) { app->debug = b; }
-void MinimalEnableVsync(MinimalApp* app, MinimalBool b) { MinimalSwapIntervalWGL(b); app->vsync = b; }
+void MinimalSetTitle(MinimalApp* app, const char* title) { MinimalSetWindowTitle(app->window, title); }
+void MinimalEnableDebug(MinimalApp* app, MinimalBool b)  { app->debug = b; }
+void MinimalEnableVsync(MinimalApp* app, MinimalBool b)  { MinimalSwapIntervalWGL(b); app->vsync = b; }
 
 void MinimalToggleDebug(MinimalApp* app) { MinimalEnableDebug(app, !app->debug); }
 void MinimalToggleVsync(MinimalApp* app) { MinimalEnableVsync(app, !app->vsync); }
 
-uint32_t MinimalGetFps(MinimalApp* app)	{ return app->timer.fps; }
+uint32_t MinimalGetFps(const MinimalApp* app)	{ return app->timer.fps; }
+
+void MinimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam)
+{
+	MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam };
+	if (app->on_event) app->on_event(app, &e);
+}
 
 /* --------------------------| input |----------------------------------- */
 MinimalBool MinimalKeyPressed(uint32_t keycode)
@@ -183,13 +194,13 @@ MinimalBool MinimalKeyDown(uint32_t keycode)
 MinimalBool MinimalMouseButtonPressed(uint32_t button)
 {
 	int8_t state = MinimalWindowGetMouseButtonState(_minimal_current_context, button);
-	return state >= 0 && MINIMAL_PRESS;
+	return state >= 0 && state == MINIMAL_PRESS;
 }
 
 MinimalBool MinimalMouseButtonReleased(uint32_t button)
 {
 	int8_t state = MinimalWindowGetMouseButtonState(_minimal_current_context, button);
-	return state >= 0 && MINIMAL_RELEASE;
+	return state >= 0 && state == MINIMAL_RELEASE;
 }
 
 void MinimalGetCursorPos(float* x, float* y)

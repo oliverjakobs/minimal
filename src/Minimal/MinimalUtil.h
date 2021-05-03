@@ -14,6 +14,10 @@
 #include <stdlib.h>
 
 typedef struct MinimalWindow MinimalWindow;
+
+
+#define MINIMAL_FALSE   0
+#define MINIMAL_TRUE    1
 typedef uint8_t MinimalBool;
 
 /* --------------------------| input |----------------------------------- */
