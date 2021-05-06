@@ -7,7 +7,7 @@
 /* minimal version numbers */
 #define MINIMAL_VERSION_MAJOR       1
 #define MINIMAL_VERSION_MINOR       3
-#define MINIMAL_VERSION_REVISION    1
+#define MINIMAL_VERSION_REVISION    2
 
 MinimalBool MinimalInit();
 void MinimalTerminate();
