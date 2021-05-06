@@ -139,6 +139,8 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 
 		if (app->debug) app->on_render_debug(app);
 
+		app->on_render_ui(app);
+
 		MinimalPollEvent(app->window);
 		MinimalSwapBuffer(app->window);
 
@@ -154,7 +156,7 @@ void MinimalSetEventCallback(MinimalApp* app, MinimalEventCB cb)		{ app->on_even
 void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb)		{ app->on_update = cb; }
 void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)		{ app->on_render = cb; }
 void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render_debug = cb; }
-void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_gui = cb; }
+void MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_ui = cb; }
 
 /* --------------------------| settings |-------------------------------- */
 void MinimalSetTitle(MinimalApp* app, const char* title) { MinimalSetWindowTitle(app->window, title); }

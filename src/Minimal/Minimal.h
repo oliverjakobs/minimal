@@ -41,7 +41,7 @@ struct MinimalApp
     MinimalUpdateCB on_update;
     MinimalRenderCB on_render;
     MinimalRenderCB on_render_debug;
-    MinimalRenderCB on_render_gui;
+    MinimalRenderCB on_render_ui;
 
     MinimalBool debug;
     MinimalBool vsync;
@@ -62,7 +62,7 @@ void MinimalSetEventCallback(MinimalApp* app, MinimalEventCB callback);
 void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB callback);
 void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB callback);
 void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB callback);
-void MinimalSetRenderGUICallback(MinimalApp* app, MinimalRenderCB callback);
+void MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB callback);
 
 /* --------------------------| settings |-------------------------------- */
 void MinimalSetTitle(MinimalApp* app, const char* title);
