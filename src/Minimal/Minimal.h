@@ -56,13 +56,13 @@ void MinimalDestroy(MinimalApp* app);
 void MinimalRun(MinimalApp* app, void(*clear_buffer)());
 void MinimalClose(MinimalApp* app);
 
-void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB callback);
-void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB callback);
-void MinimalSetEventCallback(MinimalApp* app, MinimalEventCB callback);
-void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB callback);
-void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB callback);
-void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB callback);
-void MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB callback);
+MinimalLoadCB    MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB callback);
+MinimalDestroyCB MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB callback);
+MinimalEventCB   MinimalSetEventCallback(MinimalApp* app, MinimalEventCB callback);
+MinimalUpdateCB  MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB callback);
+MinimalRenderCB  MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB callback);
+MinimalRenderCB  MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB callback);
+MinimalRenderCB  MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB callback);
 
 /* --------------------------| settings |-------------------------------- */
 void MinimalSetTitle(MinimalApp* app, const char* title);

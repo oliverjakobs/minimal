@@ -150,13 +150,54 @@ void MinimalRun(MinimalApp* app, void(*clear_buffer)())
 
 void MinimalClose(MinimalApp* app) { MinimalCloseWindow(app->window); }
 
-void MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB cb)			{ app->on_load = cb; }
-void MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB cb)	{ app->on_destroy = cb; }
-void MinimalSetEventCallback(MinimalApp* app, MinimalEventCB cb)		{ app->on_event = cb; }
-void MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb)		{ app->on_update = cb; }
-void MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)		{ app->on_render = cb; }
-void MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb) { app->on_render_debug = cb; }
-void MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB cb)	{ app->on_render_ui = cb; }
+MinimalLoadCB MinimalSetLoadCallback(MinimalApp* app, MinimalLoadCB cb)
+{
+	MinimalLoadCB prev = app->on_load;
+	app->on_load = cb;
+	return prev;
+}
+
+MinimalDestroyCB MinimalSetDestroyCallback(MinimalApp* app, MinimalDestroyCB cb)
+{
+	MinimalDestroyCB prev = app->on_destroy;
+	app->on_destroy = cb;
+	return prev;
+}
+
+MinimalEventCB MinimalSetEventCallback(MinimalApp* app, MinimalEventCB cb)
+{
+	MinimalEventCB prev = app->on_event;
+	app->on_event = cb;
+	return prev;
+}
+
+MinimalUpdateCB MinimalSetUpdateCallback(MinimalApp* app, MinimalUpdateCB cb)
+{
+	MinimalUpdateCB prev = app->on_update;
+	app->on_update = cb;
+	return prev;
+}
+
+MinimalRenderCB MinimalSetRenderCallback(MinimalApp* app, MinimalRenderCB cb)
+{
+	MinimalRenderCB prev = app->on_render;
+	app->on_render = cb;
+	return prev;
+}
+
+MinimalRenderCB MinimalSetRenderDebugCallback(MinimalApp* app, MinimalRenderCB cb)
+{
+	MinimalRenderCB prev = app->on_render_debug;
+	app->on_render_debug = cb;
+	return prev;
+}
+
+MinimalRenderCB MinimalSetRenderUICallback(MinimalApp* app, MinimalRenderCB cb)
+{
+	MinimalRenderCB prev = app->on_render_ui;
+	app->on_render_ui = cb;
+	return prev;
+}
 
 /* --------------------------| settings |-------------------------------- */
 void MinimalSetTitle(MinimalApp* app, const char* title) { MinimalSetWindowTitle(app->window, title); }
