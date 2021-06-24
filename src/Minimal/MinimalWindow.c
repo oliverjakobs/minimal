@@ -380,13 +380,54 @@ uint32_t MinimalGetWindowHeigth(const MinimalWindow* wnd)   { return wnd->height
 uint8_t MinimalShouldCloseWindow(const MinimalWindow* wnd)  { return wnd->should_close; }
 void MinimalCloseWindow(MinimalWindow* wnd)                 { wnd->should_close = 1; }
 
-void MinimalSetSizeCallback(MinimalWindow* wnd, MinimalSizeCB cb)           { wnd->callbacks.size = cb; }
-void MinimalSetCloseCallback(MinimalWindow* wnd, MinimalCloseCB cb)         { wnd->callbacks.close = cb; }
-void MinimalSetKeyCallback(MinimalWindow* wnd, MinimalKeyCB cb)             { wnd->callbacks.key = cb; }
-void MinimalSetCharCallback(MinimalWindow* wnd, MinimalCharCB cb)           { wnd->callbacks.character = cb; }
-void MinimalSetMButtonCallback(MinimalWindow* wnd, MinimalMButtonCB cb)     { wnd->callbacks.m_button = cb; }
-void MinimalSetScrollCallback(MinimalWindow* wnd, MinimalScrollCB cb)       { wnd->callbacks.scroll = cb; }
-void MinimalSetCursorPosCallback(MinimalWindow* wnd, MinimalCursorPosCB cb) { wnd->callbacks.cursor_pos = cb; }
+MinimalSizeCB MinimalSetSizeCallback(MinimalWindow* wnd, MinimalSizeCB cb)
+{
+    MinimalSizeCB prev = wnd->callbacks.size;
+    wnd->callbacks.size = cb;
+    return prev;
+}
+
+MinimalCloseCB MinimalSetCloseCallback(MinimalWindow* wnd, MinimalCloseCB cb)
+{
+    MinimalCloseCB prev = wnd->callbacks.close;
+    wnd->callbacks.close = cb;
+    return prev;
+}
+
+MinimalKeyCB MinimalSetKeyCallback(MinimalWindow* wnd, MinimalKeyCB cb)
+{
+    MinimalKeyCB prev = wnd->callbacks.key;
+    wnd->callbacks.key = cb;
+    return prev;
+}
+
+MinimalCharCB MinimalSetCharCallback(MinimalWindow* wnd, MinimalCharCB cb)
+{
+    MinimalCharCB prev = wnd->callbacks.character;
+    wnd->callbacks.character = cb;
+    return prev;
+}
+
+MinimalMButtonCB MinimalSetMButtonCallback(MinimalWindow* wnd, MinimalMButtonCB cb)
+{
+    MinimalMButtonCB prev = wnd->callbacks.m_button;
+    wnd->callbacks.m_button = cb;
+    return prev;
+}
+
+MinimalScrollCB MinimalSetScrollCallback(MinimalWindow* wnd, MinimalScrollCB cb)
+{
+    MinimalScrollCB prev = wnd->callbacks.scroll;
+    wnd->callbacks.scroll = cb;
+    return prev;
+}
+
+MinimalCursorPosCB MinimalSetCursorPosCallback(MinimalWindow* wnd, MinimalCursorPosCB cb)
+{
+    MinimalCursorPosCB prev = wnd->callbacks.cursor_pos;
+    wnd->callbacks.cursor_pos = cb;
+    return prev;
+}
 
 
 /* --------------------------| input |----------------------------------- */

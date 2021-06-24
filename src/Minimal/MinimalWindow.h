@@ -51,13 +51,13 @@ uint32_t MinimalGetWindowHeigth(const MinimalWindow* window);
 MinimalBool MinimalShouldCloseWindow(const MinimalWindow* window);
 void MinimalCloseWindow(MinimalWindow* window);
 
-void MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size);
-void MinimalSetCloseCallback(MinimalWindow* window, MinimalCloseCB close);
-void MinimalSetKeyCallback(MinimalWindow* window, MinimalKeyCB key);
-void MinimalSetCharCallback(MinimalWindow* window, MinimalCharCB character);
-void MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button);
-void MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll);
-void MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos);
+MinimalSizeCB       MinimalSetSizeCallback(MinimalWindow* window, MinimalSizeCB size);
+MinimalCloseCB      MinimalSetCloseCallback(MinimalWindow* window, MinimalCloseCB close);
+MinimalKeyCB        MinimalSetKeyCallback(MinimalWindow* window, MinimalKeyCB key);
+MinimalCharCB       MinimalSetCharCallback(MinimalWindow* window, MinimalCharCB character);
+MinimalMButtonCB    MinimalSetMButtonCallback(MinimalWindow* window, MinimalMButtonCB m_button);
+MinimalScrollCB     MinimalSetScrollCallback(MinimalWindow* window, MinimalScrollCB scroll);
+MinimalCursorPosCB  MinimalSetCursorPosCallback(MinimalWindow* window, MinimalCursorPosCB cursor_pos);
 
 /* --------------------------| input |----------------------------------- */
 void MinimalCreateKeyTable();
