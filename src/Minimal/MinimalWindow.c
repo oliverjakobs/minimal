@@ -154,7 +154,8 @@ static LRESULT MinimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     case WM_SYSCHAR:
     case WM_UNICHAR:
     {
-        MinimalCallChar(window, (UINT)wParam, MinimalGetKeyMods());
+        const UINT codepoint = (UINT)wParam;
+        if (codepoint > 31) MinimalCallChar(window, codepoint, MinimalGetKeyMods());
         return 0;
     }
     case WM_KEYDOWN:
