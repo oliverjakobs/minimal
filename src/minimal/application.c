@@ -1,9 +1,9 @@
-#include "Application.h"
+#include "application.h"
 
 #include <string.h>
 
 /* --------------------------| minimal app |----------------------------- */
-void minimalGLFWErrorCallback(int error, const char* desc)
+static void minimalGLFWErrorCallback(int error, const char* desc)
 {
     MINIMAL_ERROR("[GLFW] (%d) %s", error, desc);
 }
@@ -16,9 +16,22 @@ void minimalGLFWMouseButtonCallback(GLFWwindow* window, int button, int action, 
 void minimalGLFWCursorPosCallback(GLFWwindow* window, double xpos, double ypos);
 void minimalGLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
-static int minimalInitGlfw(MinimalApp* app, const char* title, uint32_t w, uint32_t h, int gl_major, int gl_minor)
+static void minimalGetGLVersion(const char* version_str, int* major, int* minor)
+{
+    const char* sep = ".";
+    const char* major_str = version_str;
+    const char* minor_str = version_str + strcspn(version_str, sep) + 1;
+
+    if (major_str && major) *major = atoi(major_str);
+    if (minor_str && minor) *minor = atoi(minor_str);
+}
+
+static int minimalInitGlfw(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version)
 {
     if (!glfwInit()) return MINIMAL_FAIL;
+
+    int gl_major, gl_minor;
+    minimalGetGLVersion(gl_version, &gl_major, &gl_minor);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gl_major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gl_minor);
@@ -48,9 +61,9 @@ static int minimalInitGlfw(MinimalApp* app, const char* title, uint32_t w, uint3
     return MINIMAL_OK;
 }
 
-int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, int gl_major, int gl_minor)
+int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version)
 {
-    if (minimalInitGlfw(app, title, w, h, gl_minor, gl_major) != MINIMAL_OK)
+    if (minimalInitGlfw(app, title, w, h, gl_version) != MINIMAL_OK)
     {
         MINIMAL_ERROR("[GLFW] Failed to initialize GLFW.");
         glfwTerminate();
@@ -78,8 +91,7 @@ void minimalRun(MinimalApp* app)
     MINIMAL_ASSERT(app, "");
     MINIMAL_ASSERT(app->on_update, "Update callback missing!");
 
-    while (!glfwWindowShouldClose(app->window))
-    {
+    while (!glfwWindowShouldClose(app->window)) {
         minimalTimerStart(&app->timer, glfwGetTime());
         minimalUpdateInput(app->window);
 

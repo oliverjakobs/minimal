@@ -1,6 +1,6 @@
-#include "Event.h"
+#include "event.h"
 
-#include "Application.h"
+#include "application.h"
 
 #define MINIMAL_LOWORD(dw) ((uint16_t)(dw))
 #define MINIMAL_HIWORD(dw) ((uint16_t)(((uint32_t)(dw)) >> 16))

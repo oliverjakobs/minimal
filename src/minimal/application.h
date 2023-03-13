@@ -3,9 +3,9 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Utils.h"
-#include "Input.h"
-#include "Event.h"
+#include "utils.h"
+#include "input.h"
+#include "event.h"
 
 /* --------------------------| minimal app |----------------------------- */
 typedef int  (*MinimalLoadCB)    (MinimalApp* app, uint32_t w, uint32_t h);
@@ -31,7 +31,7 @@ struct MinimalApp
     uint8_t vsync : 1;
 };
 
-int  minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, int gl_major, int gl_minor);
+int  minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version);
 void minimalDestroy(MinimalApp* app);
 
 void minimalRun(MinimalApp* app);

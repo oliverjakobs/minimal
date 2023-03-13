@@ -1,6 +1,6 @@
-#include "Utils.h"
+#include "utils.h"
 
-#include "Application.h"
+#include "application.h"
 
 void minimalGetVersion(int* major, int* minor, int* rev)
 {
