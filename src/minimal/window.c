@@ -43,6 +43,8 @@ MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, co
     wnd->height = h;
 
     wnd->should_close = 0;
+    wnd->maximized = 0;
+    wnd->minimized = 0;
 
     wnd->app = NULL;
 
@@ -56,6 +58,8 @@ MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, co
     wnd->callbacks.m_button = NULL;
     wnd->callbacks.scroll = NULL;
     wnd->callbacks.cursor_pos = NULL;
+    wnd->callbacks.maximize = NULL;
+    wnd->callbacks.minimize = NULL;
 
     minimalPlatformCreateWindow(&wnd->platform, title, w, h);
 

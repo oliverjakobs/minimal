@@ -99,7 +99,7 @@ uint8_t minimalMouseUp(int8_t button)
 
 void minimalCursorPos(float* x, float* y)
 {
-    minimalGetCursorPos(minimalGetCurrentContext(), &x, &y);
+    minimalGetCursorPos(minimalGetCurrentContext(), x, y);
 }
 
 float minimalCursorX()

@@ -48,7 +48,7 @@ static void minimalGetGLVersion(const char* version_str, int* major, int* minor)
 int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl)
 {
     app->debug = 0;
-    app->vsync = 0;
+    app->vsync = 1;
 
     /* minimal initialization */
     if (!minimalInit())
