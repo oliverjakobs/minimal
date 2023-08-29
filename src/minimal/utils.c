@@ -2,21 +2,6 @@
 
 #include "application.h"
 
-void minimalGetVersion(int* major, int* minor, int* rev)
-{
-    if (major != NULL) *major = MINIMAL_VERSION_MAJOR;
-    if (minor != NULL) *minor = MINIMAL_VERSION_MINOR;
-    if (rev != NULL)   *rev = MINIMAL_VERSION_REVISION;
-}
-
-#define MINIMAL_CONCAT_VERSION(m, n, r) #m "." #n "." #r
-#define MINIMAL_MAKE_VERSION_STR(m, n, r) MINIMAL_CONCAT_VERSION(m, n, r)
-
-const char* minimalGetVersionString()
-{
-    return MINIMAL_MAKE_VERSION_STR(MINIMAL_VERSION_MAJOR, MINIMAL_VERSION_MINOR, MINIMAL_VERSION_REVISION);
-}
-
 /* --------------------------| logging |--------------------------------- */
 #define MINIMAL_LOG_BLACK       "\x1b[30m"
 #define MINIMAL_LOG_RED         "\x1b[31m"
@@ -65,6 +50,7 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
     vfprintf(stream, fmt, args);
     fprintf(stream, "\n");
 }
+
 
 /* --------------------------| timer |----------------------------------- */
 void minimalTimerReset(MinimalTimer* timer)

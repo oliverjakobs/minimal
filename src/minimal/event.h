@@ -35,4 +35,4 @@ int32_t minimalEventKeyReleased(const MinimalEvent* e);
 
 char minimalEventChar(const MinimalEvent* e);
 
-#endif // !MINIMAL_EVENT_H
+#endif /* !MINIMAL_EVENT_H */

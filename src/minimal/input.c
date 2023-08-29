@@ -1,98 +1,105 @@
 #include "input.h"
 
+#include "window.h"
+#include "application.h"
+
 typedef struct
 {
     uint8_t state;
     uint8_t prev;
 } InputState;
 
-static InputState key_states[GLFW_KEY_LAST + 1];
-static InputState mouse_states[GLFW_MOUSE_BUTTON_LAST + 1];
+static InputState key_states[MINIMAL_KEY_LAST + 1];
+static InputState mouse_states[MINIMAL_MOUSE_BUTTON_LAST + 1];
 
-void minimalUpdateInput(GLFWwindow* context)
+void minimalUpdateInput(MinimalWindow* context)
 {
-    for (int16_t i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; ++i)
+    for (int16_t i = MINIMAL_KEY_FIRST; i <= MINIMAL_KEY_LAST; ++i)
     {
         key_states[i].prev = key_states[i].state;
-        key_states[i].state = (glfwGetKey(context, i) == GLFW_PRESS);
+        key_states[i].state = (minimalGetKeyState(context, i) == MINIMAL_PRESS);
     }
 
-    for (int16_t i = GLFW_MOUSE_BUTTON_1; i <= GLFW_MOUSE_BUTTON_LAST; ++i)
+    for (int16_t i = MINIMAL_MOUSE_BUTTON_1; i <= MINIMAL_MOUSE_BUTTON_LAST; ++i)
     {
         mouse_states[i].prev = mouse_states[i].state;
-        mouse_states[i].state = (glfwGetMouseButton(context, i) == GLFW_PRESS);
+        mouse_states[i].state = (minimalGetMouseButtonState(context, i) == MINIMAL_PRESS);
     }
+}
+
+uint8_t minimalKeycodeValid(int16_t keycode)
+{
+    return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
 uint8_t minimalKeyPressed(int16_t keycode)
 {
-    if (keycode > GLFW_KEY_LAST || keycode == GLFW_KEY_UNKNOWN) return 0;
-
-    int state = glfwGetKey(glfwGetCurrentContext(), keycode);
-    return state == GLFW_PRESS || state == GLFW_REPEAT;
+    if (!minimalKeycodeValid(keycode)) return 0;
+    return minimalGetKeyState(minimalGetCurrentContext(), keycode) == MINIMAL_PRESS;
 }
 
 uint8_t minimalKeyReleased(int16_t keycode)
 {
-    if (keycode > GLFW_KEY_LAST || keycode == GLFW_KEY_UNKNOWN) return 0;
-    return glfwGetKey(glfwGetCurrentContext(), keycode) == GLFW_RELEASE;
+    if (!minimalKeycodeValid(keycode)) return 0;
+    return minimalGetKeyState(minimalGetCurrentContext(), keycode) == MINIMAL_RELEASE;
 }
 
 uint8_t minimalKeyHit(int16_t keycode)
 {
-    if (keycode > GLFW_KEY_LAST || keycode <= GLFW_KEY_UNKNOWN) return 0;
+    if (!minimalKeycodeValid(keycode)) return 0;
     return key_states[keycode].state && !key_states[keycode].prev;
 }
 
 uint8_t minimalKeyDown(int16_t keycode)
 {
-    if (keycode > GLFW_KEY_LAST || keycode <= GLFW_KEY_UNKNOWN) return 0;
+    if (!minimalKeycodeValid(keycode)) return 0;
     return key_states[keycode].state;
 }
 
 uint8_t minimalKeyUp(int16_t keycode)
 {
-    if (keycode > GLFW_KEY_LAST || keycode <= GLFW_KEY_UNKNOWN) return 0;
+    if (!minimalKeycodeValid(keycode)) return 0;
     return key_states[keycode].prev && !key_states[keycode].state;
+}
+
+uint8_t minimalMouseButtonValid(int8_t button)
+{
+    return button >= MINIMAL_MOUSE_BUTTON_1 && button <= MINIMAL_MOUSE_BUTTON_LAST;
 }
 
 uint8_t minimalMousePressed(int8_t button)
 {
-    if (button > GLFW_MOUSE_BUTTON_LAST || button < GLFW_MOUSE_BUTTON_1) return 0;
-    return glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_PRESS;
+    if (!minimalMouseButtonValid(button)) return 0;
+    return minimalGetMouseButtonState(minimalGetCurrentContext(), button) == MINIMAL_PRESS;
 }
 
 uint8_t minimalMouseReleased(int8_t button)
 {
-    if (button > GLFW_MOUSE_BUTTON_LAST || button < GLFW_MOUSE_BUTTON_1) return 0;
-    return glfwGetMouseButton(glfwGetCurrentContext(), button) == GLFW_RELEASE;
+    if (!minimalMouseButtonValid(button)) return 0;
+    return minimalGetMouseButtonState(minimalGetCurrentContext(), button) == MINIMAL_RELEASE;
 }
 
 uint8_t minimalMouseHit(int8_t button)
 {
-    if (button > GLFW_MOUSE_BUTTON_LAST || button < GLFW_MOUSE_BUTTON_1) return 0;
+    if (!minimalMouseButtonValid(button)) return 0;
     return mouse_states[button].state && !mouse_states[button].prev;
 }
 
 uint8_t minimalMouseDown(int8_t button)
 {
-    if (button > GLFW_MOUSE_BUTTON_LAST || button < GLFW_MOUSE_BUTTON_1) return 0;
+    if (!minimalMouseButtonValid(button)) return 0;
     return mouse_states[button].state;
 }
 
 uint8_t minimalMouseUp(int8_t button)
 {
-    if (button > GLFW_MOUSE_BUTTON_LAST || button < GLFW_MOUSE_BUTTON_1) return 0;
+    if (!minimalMouseButtonValid(button)) return 0;
     return mouse_states[button].prev && !mouse_states[button].state;
 }
 
 void minimalCursorPos(float* x, float* y)
 {
-    double xpos, ypos;
-    glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
-
-    if (x) *x = (float)xpos;
-    if (y) *y = (float)ypos;
+    minimalGetCursorPos(minimalGetCurrentContext(), &x, &y);
 }
 
 float minimalCursorX()

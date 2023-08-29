@@ -16,7 +16,7 @@ struct MinimalEvent
 void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam)
 {
     MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam };
-    if (app->on_event) app->on_event(app, &e);
+    if (app && app->on_event) app->on_event(app, &e);
 }
 
 uint8_t minimalCheckEventType(const MinimalEvent* e, uint32_t type) { return e->type == type; }
@@ -33,7 +33,7 @@ uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h)
 
 int32_t minimalEventMouseButton(const MinimalEvent* e, float* x, float* y)
 {
-    if (e->type != MINIMAL_EVENT_MOUSE_BUTTON) return GLFW_KEY_UNKNOWN;
+    if (e->type != MINIMAL_EVENT_MOUSE_BUTTON) return MINIMAL_MOUSE_BUTTON_UNKNOWN;
 
     if (x) *x = (float)e->lParam;
     if (y) *y = (float)e->rParam;
@@ -44,13 +44,13 @@ int32_t minimalEventMouseButton(const MinimalEvent* e, float* x, float* y)
 int32_t minimalEventMouseButtonPressed(const MinimalEvent* e, float* x, float* y)
 {
     int32_t buttoncode = minimalEventMouseButton(e, x, y);
-    return (MINIMAL_LOWORD(e->uParam) == GLFW_PRESS) ? buttoncode : GLFW_KEY_UNKNOWN;
+    return (MINIMAL_LOWORD(e->uParam) == MINIMAL_PRESS) ? buttoncode : MINIMAL_MOUSE_BUTTON_UNKNOWN;
 }
 
 int32_t minimalEventMouseButtonReleased(const MinimalEvent* e, float* x, float* y)
 {
     int32_t buttoncode = minimalEventMouseButton(e, x, y);
-    return (MINIMAL_LOWORD(e->uParam) == GLFW_RELEASE) ? buttoncode : GLFW_KEY_UNKNOWN;
+    return (MINIMAL_LOWORD(e->uParam) == MINIMAL_RELEASE) ? buttoncode : MINIMAL_MOUSE_BUTTON_UNKNOWN;
 }
 
 uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y)
@@ -65,17 +65,17 @@ uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y)
 
 int32_t minimalEventKey(const MinimalEvent* e)
 {
-    return (e->type == MINIMAL_EVENT_KEY) ? e->uParam : GLFW_KEY_UNKNOWN;
+    return (e->type == MINIMAL_EVENT_KEY) ? e->uParam : MINIMAL_KEY_UNKNOWN;
 }
 
 int32_t minimalEventKeyPressed(const MinimalEvent* e)
 {
-    return (e->type == MINIMAL_EVENT_KEY && e->lParam == GLFW_PRESS) ? e->uParam : GLFW_KEY_UNKNOWN;
+    return (e->type == MINIMAL_EVENT_KEY && e->lParam == MINIMAL_PRESS) ? e->uParam : MINIMAL_KEY_UNKNOWN;
 }
 
 int32_t minimalEventKeyReleased(const MinimalEvent* e)
 {
-    return (e->type == MINIMAL_EVENT_KEY && e->lParam == GLFW_RELEASE) ? e->uParam : GLFW_KEY_UNKNOWN;
+    return (e->type == MINIMAL_EVENT_KEY && e->lParam == MINIMAL_RELEASE) ? e->uParam : MINIMAL_KEY_UNKNOWN;
 }
 
 char minimalEventChar(const MinimalEvent* e)
