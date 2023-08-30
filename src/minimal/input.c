@@ -1,6 +1,5 @@
 #include "input.h"
 
-#include "window.h"
 #include "application.h"
 
 typedef struct

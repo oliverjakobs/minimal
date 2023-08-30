@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MINIMAL_FAIL    0
 #define MINIMAL_OK      1
@@ -14,9 +15,9 @@
 #define MINIMAL_DISABLE_ASSERT
 #endif
 
-typedef struct MinimalEvent MinimalEvent;
 typedef struct MinimalApp MinimalApp;
 typedef struct MinimalWindow MinimalWindow;
+typedef struct MinimalEvent MinimalEvent;
 
 /* --------------------------| logging |--------------------------------- */
 #ifndef MINIMAL_DISABLE_LOGGING
@@ -51,15 +52,10 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 
 /* --------------------------| assert |---------------------------------- */
 #ifndef MINIMAL_DISABLE_ASSERT
-
 #include <assert.h>
-
 #define MINIMAL_ASSERT(expr, msg) assert(((void)(msg), (expr)))
-
 #else
-
 #define MINIMAL_ASSERT(expr, msg) 
-
 #endif
 
 /* --------------------------| timer |----------------------------------- */

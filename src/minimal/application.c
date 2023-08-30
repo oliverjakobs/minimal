@@ -1,9 +1,5 @@
 #include "application.h"
 
-#include "window.h"
-
-static MinimalWindow* _minimal_current_context = NULL;
-
 void minimalGetVersion(int* major, int* minor, int* rev)
 {
     if (major != NULL) *major = MINIMAL_VERSION_MAJOR;
@@ -57,13 +53,19 @@ int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, cons
         return MINIMAL_FAIL;
     }
 
-    MinimalWindowConfig wnd_config = { 0 };
+    int gl_major, gl_minor;
+    minimalGetGLVersion(gl, &gl_major, &gl_minor);
+
+    MinimalWndConfig wnd_config = {
+        .gl_major = gl_major,
+        .gl_minor = gl_minor,
+        .profile = MINIMAL_CONTEXT_CORE_PROFILE,
+        .flags = 0
+    };
 
 #ifdef _DEBUG
-    wnd_config.flags |= 0x0001;
+    wnd_config.flags |= MINIMAL_CONTEXT_DEBUG_BIT;
 #endif // _DEBUG
-
-    minimalGetGLVersion(gl, &wnd_config.gl_major, &wnd_config.gl_minor);
 
     /* creating the window */
     app->window = minimalCreateWindow(title, w, h, &wnd_config);
@@ -73,7 +75,7 @@ int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, cons
         return MINIMAL_FAIL;
     }
 
-    minimalWindowSetApp(app->window, app);
+    minimalSetApp(app->window, app);
     minimalMakeContextCurrent(app->window);
     minimalTimerReset(&app->timer);
 
@@ -88,17 +90,17 @@ void minimalDestroy(MinimalApp* app)
 
 void minimalRun(MinimalApp* app)
 {
-    while (!minimalShouldCloseWindow(app->window))
+    while (!minimalShouldClose(app->window))
     {
-        minimalTimerStart(&app->timer, minimalPlatformGetTime());
+        minimalTimerStart(&app->timer, minimalGetTime());
         minimalUpdateInput(app->window);
 
         app->on_update(app, (float)app->timer.deltatime);
 
         minimalPollEvent(app->window);
-        minimalSwapBuffer(app->window);
+        minimalSwapBuffers(app->window);
 
-        minimalTimerEnd(&app->timer, minimalPlatformGetTime());
+        minimalTimerEnd(&app->timer, minimalGetTime());
     }
 }
 
@@ -107,7 +109,7 @@ void minimalClose(MinimalApp* app) { minimalCloseWindow(app->window); }
 /* --------------------------| settings |-------------------------------- */
 void minimalSetTitle(MinimalApp* app, const char* title) { minimalSetWindowTitle(app->window, title); }
 void minimalEnableDebug(MinimalApp* app, uint8_t b)  { app->debug = b; }
-void minimalEnableVsync(MinimalApp* app, uint8_t b)  { minimalPlatformSwapInterval(b); app->vsync = b; }
+void minimalEnableVsync(MinimalApp* app, uint8_t b)  { minimalSwapInterval(b); app->vsync = b; }
 
 void minimalToggleDebug(MinimalApp* app) { minimalEnableDebug(app, !app->debug); }
 void minimalToggleVsync(MinimalApp* app) { minimalEnableVsync(app, !app->vsync); }

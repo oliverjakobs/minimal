@@ -2,7 +2,7 @@
 #define MINIMAL_H
 
 #include "utils.h"
-#include "window.h"
+#include "platform.h"
 #include "event.h"
 #include "input.h"
 
