@@ -1,5 +1,5 @@
-#ifndef MINIMAL_UTIL_H
-#define MINIMAL_UTIL_H
+#ifndef MINIMAL_COMMON_H
+#define MINIMAL_COMMON_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -57,24 +57,6 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 #else
 #define MINIMAL_ASSERT(expr, msg) 
 #endif
-
-/* --------------------------| timer |----------------------------------- */
-typedef struct
-{
-    uint32_t frames;
-    uint32_t fps;
-
-    double seconds;
-    double deltatime;
-    double lastframe;
-} MinimalTimer;
-
-void minimalTimerReset(MinimalTimer* timer);
-
-void minimalTimerStart(MinimalTimer* timer, double seconds);
-void minimalTimerEnd(MinimalTimer* timer, double seconds);
-
-uint32_t minimalGetFps(const MinimalApp* app);
 
 /* --------------------------| keycodes |-------------------------------- */
 #define MINIMAL_KEY_UNKNOWN         -1
@@ -224,4 +206,7 @@ uint32_t minimalGetFps(const MinimalApp* app);
 #define MINIMAL_RELEASE 0
 #define MINIMAL_PRESS   1
 
-#endif // !MINIMAL_UTIL_H
+uint8_t minimalKeycodeValid(int16_t keycode);
+uint8_t minimalMouseButtonValid(int8_t button);
+
+#endif // !MINIMAL_COMMON_H

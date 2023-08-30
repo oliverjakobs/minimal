@@ -1,6 +1,4 @@
-#include "utils.h"
-
-#include "application.h"
+#include "common.h"
 
 /* --------------------------| logging |--------------------------------- */
 #define MINIMAL_LOG_BLACK       "\x1b[30m"
@@ -51,33 +49,14 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
     fprintf(stream, "\n");
 }
 
+/* --------------------------| keycodes |-------------------------------- */
 
-/* --------------------------| timer |----------------------------------- */
-void minimalTimerReset(MinimalTimer* timer)
+uint8_t minimalKeycodeValid(int16_t keycode)
 {
-    timer->seconds = 0.0;
-    timer->frames = 0;
-    timer->fps = 0;
-
-    timer->deltatime = 0.0;
-    timer->lastframe = 0.0;
+    return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
-void minimalTimerStart(MinimalTimer* timer, double seconds)
+uint8_t minimalMouseButtonValid(int8_t button)
 {
-    timer->deltatime = seconds - timer->lastframe;
-    timer->lastframe = seconds;
+    return button >= MINIMAL_MOUSE_BUTTON_1 && button <= MINIMAL_MOUSE_BUTTON_LAST;
 }
-
-void minimalTimerEnd(MinimalTimer* timer, double seconds)
-{
-    timer->frames++;
-    if ((seconds - timer->seconds) > 1.0)
-    {
-        timer->seconds += 1.0;
-        timer->fps = timer->frames;
-        timer->frames = 0;
-    }
-}
-
-uint32_t minimalGetFps(const MinimalApp* app) { return app->timer.fps; }

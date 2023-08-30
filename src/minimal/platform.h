@@ -1,7 +1,7 @@
 #ifndef MINIMAL_PLATFORM_H
 #define MINIMAL_PLATFORM_H
 
-#include "utils.h"
+#include "common.h"
 
 #define MINIMAL_CONTEXT_DEBUG_BIT               0x0001
 #define MINIMAL_CONTEXT_FORWARD_COMPATIBLE_BIT  0x0002
@@ -24,7 +24,8 @@ typedef struct
 MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, const MinimalWndConfig* config);
 void minimalDestroyWindow(MinimalWindow* window);
 
-void minimalSetApp(MinimalWindow* context, MinimalApp* app);
+void  minimalSetWindowEventHandler(MinimalWindow* window, void* handler);
+void* minimalGetWindowEventHandler(MinimalWindow* window);
 
 void minimalMakeContextCurrent(MinimalWindow* context);
 MinimalWindow* minimalGetCurrentContext();

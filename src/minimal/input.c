@@ -1,6 +1,6 @@
 #include "input.h"
 
-#include "application.h"
+#include "platform.h"
 
 typedef struct
 {
@@ -24,11 +24,6 @@ void minimalUpdateInput(MinimalWindow* context)
         mouse_states[i].prev = mouse_states[i].state;
         mouse_states[i].state = (minimalGetMouseButtonState(context, i) == MINIMAL_PRESS);
     }
-}
-
-uint8_t minimalKeycodeValid(int16_t keycode)
-{
-    return keycode >= MINIMAL_KEY_FIRST && keycode <= MINIMAL_KEY_LAST;
 }
 
 uint8_t minimalKeyPressed(int16_t keycode)
@@ -59,11 +54,6 @@ uint8_t minimalKeyUp(int16_t keycode)
 {
     if (!minimalKeycodeValid(keycode)) return 0;
     return key_states[keycode].prev && !key_states[keycode].state;
-}
-
-uint8_t minimalMouseButtonValid(int8_t button)
-{
-    return button >= MINIMAL_MOUSE_BUTTON_1 && button <= MINIMAL_MOUSE_BUTTON_LAST;
 }
 
 uint8_t minimalMousePressed(int8_t button)

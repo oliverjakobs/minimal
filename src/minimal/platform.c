@@ -34,8 +34,7 @@
 #define WGL_FULL_ACCELERATION_ARB                   0x2027
 #define WGL_TYPE_RGBA_ARB                           0x202B
 
-#include "input.h"
-#include "application.h"
+#include "event.h"
 
 // WGL extension pointer typedefs
 typedef BOOL(WINAPI* wglSwapIntervalEXT_T)(int);
@@ -186,8 +185,6 @@ uint8_t minimalPlatformTerminate()
 
 struct MinimalWindow
 {
-    MinimalApp* app;
-
     HINSTANCE   instance;
     HWND        handle;
     HDC         device_context;
@@ -199,6 +196,8 @@ struct MinimalWindow
 
     uint8_t key_state[MINIMAL_KEY_LAST + 1];
     uint8_t mouse_buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
+
+    void* event_handler;
 };
 
 static uint8_t minimalCreateRenderContext(MinimalWindow* window, const MinimalWndConfig* config)
@@ -280,6 +279,8 @@ MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, co
     window->maximized = 0;
     window->minimized = 0;
 
+    window->event_handler = NULL;
+
     memset(window->key_state,     MINIMAL_RELEASE, sizeof(window->key_state));
     memset(window->mouse_buttons, MINIMAL_RELEASE, sizeof(window->mouse_buttons));
 
@@ -344,9 +345,14 @@ void minimalDestroyWindow(MinimalWindow* window)
     free(window);
 }
 
-void minimalSetApp(MinimalWindow* context, MinimalApp* app)
+void minimalSetWindowEventHandler(MinimalWindow* window, void* handler)
 {
-    context->app = app;
+    window->event_handler = handler;
+}
+
+void* minimalGetWindowEventHandler(MinimalWindow* window)
+{
+    return window->event_handler;
 }
 
 static MinimalWindow* _current_context;
@@ -584,6 +590,9 @@ static void minimalCreateKeyTable()
 static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (!_current_context) return DefWindowProcW(hwnd, msg, wParam, lParam);
+
+    MinimalApp* event_handler = minimalGetWindowEventHandler(_current_context);
+
     switch (msg)
     {
     case WM_DESTROY:
@@ -602,7 +611,7 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         uint32_t codepoint = (uint32_t)wParam;
         uint32_t mods = minimalGetKeyMods();
         if (codepoint > 31)
-            minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_CHAR, codepoint, 0, mods);
+            minimalDispatchEvent(event_handler, MINIMAL_EVENT_CHAR, codepoint, 0, mods);
         return 0;
     }
     case WM_KEYDOWN:
@@ -617,7 +626,7 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         if (minimalKeycodeValid(keycode)) _current_context->key_state[keycode] = (uint8_t)action;
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_KEY, keycode, action, mods);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_KEY, keycode, action, mods);
         return 0;
     }
     case WM_LBUTTONDOWN:
@@ -643,7 +652,7 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 
         if (minimalMouseButtonValid(button)) _current_context->mouse_buttons[button] = (uint8_t)action;
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_MOUSE_BUTTON, (button << 16) + action, x, y);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_MOUSE_BUTTON, (button << 16) + action, x, y);
 
         if (minimalCheckMouseButtons(_current_context) > MINIMAL_MOUSE_BUTTON_LAST) ReleaseCapture();
 
@@ -654,21 +663,21 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         int32_t x = MINIMAL_GET_X_LPARAM(lParam);
         int32_t y = MINIMAL_GET_Y_LPARAM(lParam);
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_MOUSE_MOVED, 0, x, y);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_MOUSE_MOVED, 0, x, y);
         return 0;
     }
     case WM_MOUSEWHEEL:
     {
         int32_t scroll = MINIMAL_GET_SCROLL(wParam);
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_MOUSE_SCROLLED, 0, 0, scroll);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_MOUSE_SCROLLED, 0, 0, scroll);
         return 0;
     }
     case WM_MOUSEHWHEEL:
     {
         int32_t scroll = MINIMAL_GET_SCROLL(wParam);
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_MOUSE_SCROLLED, 0, scroll, 0);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_MOUSE_SCROLLED, 0, scroll, 0);
         return 0;
     }
     case WM_SIZE:
@@ -679,19 +688,19 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
         if (_current_context->minimized != minimized)
         {
             _current_context->minimized = minimized;
-            minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_WINDOW_MINIMIZE, minimized, 0, 0);
+            minimalDispatchEvent(event_handler, MINIMAL_EVENT_WINDOW_MINIMIZE, minimized, 0, 0);
         }
 
         if (_current_context->maximized != maximized)
         {
             _current_context->maximized = maximized;
-            minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_WINDOW_MAXIMIZE, maximized, 0, 0);
+            minimalDispatchEvent(event_handler, MINIMAL_EVENT_WINDOW_MAXIMIZE, maximized, 0, 0);
         }
 
         int32_t width  = LOWORD(lParam);
         int32_t height = HIWORD(lParam);
 
-        minimalDispatchEvent(_current_context->app, MINIMAL_EVENT_WINDOW_SIZE, 0, width, height);
+        minimalDispatchEvent(event_handler, MINIMAL_EVENT_WINDOW_SIZE, 0, width, height);
         return 0;
     }
     default: return DefWindowProcW(hwnd, msg, wParam, lParam);

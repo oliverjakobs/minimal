@@ -1,4 +1,4 @@
-#include "application.h"
+#include "minimal.h"
 
 void minimalGetVersion(int* major, int* minor, int* rev)
 {
@@ -41,8 +41,9 @@ static void minimalGetGLVersion(const char* version_str, int* major, int* minor)
     if (minor_str && minor) *minor = atoi(minor_str);
 }
 
-int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl)
+int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, const char* gl_version)
 {
+    app->fps = 0;
     app->debug = 0;
     app->vsync = 1;
 
@@ -54,7 +55,7 @@ int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, cons
     }
 
     int gl_major, gl_minor;
-    minimalGetGLVersion(gl, &gl_major, &gl_minor);
+    minimalGetGLVersion(gl_version, &gl_major, &gl_minor);
 
     MinimalWndConfig wnd_config = {
         .gl_major = gl_major,
@@ -75,9 +76,9 @@ int minimalLoad(MinimalApp* app, const char* title, uint32_t w, uint32_t h, cons
         return MINIMAL_FAIL;
     }
 
-    minimalSetApp(app->window, app);
+    minimalSetWindowEventHandler(app->window, app);
     minimalMakeContextCurrent(app->window);
-    minimalTimerReset(&app->timer);
+    minimalSwapInterval(app->vsync);
 
     return (app->on_load) ? app->on_load(app, w, h) : MINIMAL_OK;
 }
@@ -90,17 +91,31 @@ void minimalDestroy(MinimalApp* app)
 
 void minimalRun(MinimalApp* app)
 {
+    double seconds = 0.0;
+    double deltatime = 0.0;
+    double lastframe = 0.0;
+    uint32_t frames = 0;
+
     while (!minimalShouldClose(app->window))
     {
-        minimalTimerStart(&app->timer, minimalGetTime());
+        double time = minimalGetTime();
+        deltatime = time - lastframe;
+        lastframe = time;
+
         minimalUpdateInput(app->window);
 
-        app->on_update(app, (float)app->timer.deltatime);
+        app->on_tick(app, (float)deltatime);
 
         minimalPollEvent(app->window);
         minimalSwapBuffers(app->window);
 
-        minimalTimerEnd(&app->timer, minimalGetTime());
+        frames++;
+        if ((minimalGetTime() - seconds) > 1.0)
+        {
+            seconds += 1.0;
+            app->fps = frames;
+            frames = 0;
+        }
     }
 }
 
