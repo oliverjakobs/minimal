@@ -1,5 +1,7 @@
 #include "platform.h"
 
+#ifdef MINIMAL_PLATFORM_WINDOWS
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -393,7 +395,7 @@ void    minimalWindowMaximize(MinimalWindow* context, uint8_t maximized) { conte
 uint8_t minimalWindowIsMinimized(const MinimalWindow* context) { return context->minimized; }
 uint8_t minimalWindowIsMaximized(const MinimalWindow* context) { return context->maximized; }
 
-void minimalGetContentSize(const MinimalWindow* context, uint32_t* w, uint32_t* h)
+void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     RECT rect;
     if (GetClientRect(context->handle, &rect))
@@ -403,7 +405,7 @@ void minimalGetContentSize(const MinimalWindow* context, uint32_t* w, uint32_t* 
     }
 }
 
-void minimalGetWindowSize(const MinimalWindow* context, uint32_t* w, uint32_t* h)
+void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     RECT rect;
     if (GetWindowRect(context->handle, &rect))
@@ -706,3 +708,5 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     default: return DefWindowProcW(hwnd, msg, wParam, lParam);
     }
 }
+
+#endif // MINIMAL_PLATFORM_WINDOWS

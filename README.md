@@ -1,2 +1,2 @@
 # Minimal
-Application Layer build upon glfw. 
+Small application framework for OpenGL development. 

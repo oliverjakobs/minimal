@@ -61,43 +61,7 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 /* --------------------------| keycodes |-------------------------------- */
 #define MINIMAL_KEY_UNKNOWN         -1
 
-/* function keys */
-#define MINIMAL_KEY_ESCAPE          0
-#define MINIMAL_KEY_F1              1
-#define MINIMAL_KEY_F2              2
-#define MINIMAL_KEY_F3              3
-#define MINIMAL_KEY_F4              4
-#define MINIMAL_KEY_F5              5
-#define MINIMAL_KEY_F6              6
-#define MINIMAL_KEY_F7              7
-#define MINIMAL_KEY_F8              8
-#define MINIMAL_KEY_F9              9
-#define MINIMAL_KEY_F10             10
-#define MINIMAL_KEY_F11             11
-#define MINIMAL_KEY_F12             12
-
-#define MINIMAL_KEY_ENTER           13
-#define MINIMAL_KEY_TAB             14
-#define MINIMAL_KEY_BACKSPACE       15
-#define MINIMAL_KEY_INSERT          16
-#define MINIMAL_KEY_DELETE          17
-
-#define MINIMAL_KEY_RIGHT           18
-#define MINIMAL_KEY_LEFT            19
-#define MINIMAL_KEY_DOWN            20
-#define MINIMAL_KEY_UP              21
-
-#define MINIMAL_KEY_PAGE_UP         22
-#define MINIMAL_KEY_PAGE_DOWN       23
-#define MINIMAL_KEY_HOME            24
-#define MINIMAL_KEY_END             25
-#define MINIMAL_KEY_CAPS_LOCK       26
-#define MINIMAL_KEY_SCROLL_LOCK     27
-#define MINIMAL_KEY_NUM_LOCK        28
-#define MINIMAL_KEY_PRINT_SCREEN    29
-#define MINIMAL_KEY_PAUSE           30
-
-/* ASCII keys */
+/* Printable keys */
 #define MINIMAL_KEY_SPACE           32
 #define MINIMAL_KEY_APOSTROPHE      39 /* ' */
 #define MINIMAL_KEY_COMMA           44 /* , */
@@ -147,37 +111,84 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 #define MINIMAL_KEY_RIGHT_BRACKET   93 /* ] */
 #define MINIMAL_KEY_GRAVE_ACCENT    96 /* ` */
 
+/* function keys */
+#define MINIMAL_KEY_ESCAPE          256
+#define MINIMAL_KEY_ENTER           257
+#define MINIMAL_KEY_TAB             258
+#define MINIMAL_KEY_BACKSPACE       259
+#define MINIMAL_KEY_INSERT          260
+#define MINIMAL_KEY_DELETE          261
+#define MINIMAL_KEY_RIGHT           262
+#define MINIMAL_KEY_LEFT            263
+#define MINIMAL_KEY_DOWN            264
+#define MINIMAL_KEY_UP              265
+#define MINIMAL_KEY_PAGE_UP         266
+#define MINIMAL_KEY_PAGE_DOWN       267
+#define MINIMAL_KEY_HOME            268
+#define MINIMAL_KEY_END             269
+#define MINIMAL_KEY_CAPS_LOCK       280
+#define MINIMAL_KEY_SCROLL_LOCK     281
+#define MINIMAL_KEY_NUM_LOCK        282
+#define MINIMAL_KEY_PRINT_SCREEN    283
+#define MINIMAL_KEY_PAUSE           284
+#define MINIMAL_KEY_F1              290
+#define MINIMAL_KEY_F2              291
+#define MINIMAL_KEY_F3              292
+#define MINIMAL_KEY_F4              293
+#define MINIMAL_KEY_F5              294
+#define MINIMAL_KEY_F6              295
+#define MINIMAL_KEY_F7              296
+#define MINIMAL_KEY_F8              297
+#define MINIMAL_KEY_F9              298
+#define MINIMAL_KEY_F10             299
+#define MINIMAL_KEY_F11             300
+#define MINIMAL_KEY_F12             301
+#define GLFW_KEY_F13                302
+#define GLFW_KEY_F14                303
+#define GLFW_KEY_F15                304
+#define GLFW_KEY_F16                305
+#define GLFW_KEY_F17                306
+#define GLFW_KEY_F18                307
+#define GLFW_KEY_F19                308
+#define GLFW_KEY_F20                309
+#define GLFW_KEY_F21                310
+#define GLFW_KEY_F22                311
+#define GLFW_KEY_F23                312
+#define GLFW_KEY_F24                313
+#define GLFW_KEY_F25                314
+
 /* numpad keys */
-#define MINIMAL_KEY_NP_0            256
-#define MINIMAL_KEY_NP_1            257
-#define MINIMAL_KEY_NP_2            258
-#define MINIMAL_KEY_NP_3            259
-#define MINIMAL_KEY_NP_4            260
-#define MINIMAL_KEY_NP_5            261
-#define MINIMAL_KEY_NP_6            262
-#define MINIMAL_KEY_NP_7            263
-#define MINIMAL_KEY_NP_8            264
-#define MINIMAL_KEY_NP_9            265
-#define MINIMAL_KEY_NP_DECIMAL      266
-#define MINIMAL_KEY_NP_DIVIDE       267
-#define MINIMAL_KEY_NP_MULTIPLY     268
-#define MINIMAL_KEY_NP_SUBTRACT     269
-#define MINIMAL_KEY_NP_ADD          270
-#define MINIMAL_KEY_NP_ENTER        271
-#define MINIMAL_KEY_NP_EQUAL        272
+#define MINIMAL_KEY_NP_0            320
+#define MINIMAL_KEY_NP_1            321
+#define MINIMAL_KEY_NP_2            322
+#define MINIMAL_KEY_NP_3            323
+#define MINIMAL_KEY_NP_4            324
+#define MINIMAL_KEY_NP_5            325
+#define MINIMAL_KEY_NP_6            326
+#define MINIMAL_KEY_NP_7            327
+#define MINIMAL_KEY_NP_8            328
+#define MINIMAL_KEY_NP_9            329
+#define MINIMAL_KEY_NP_DECIMAL      330
+#define MINIMAL_KEY_NP_DIVIDE       331
+#define MINIMAL_KEY_NP_MULTIPLY     332
+#define MINIMAL_KEY_NP_SUBTRACT     333
+#define MINIMAL_KEY_NP_ADD          334
+#define MINIMAL_KEY_NP_ENTER        335
+#define MINIMAL_KEY_NP_EQUAL        336
 
 /* key mods */
-#define MINIMAL_KEY_LEFT_SHIFT      273
-#define MINIMAL_KEY_LEFT_CONTROL    274
-#define MINIMAL_KEY_LEFT_ALT        275
-#define MINIMAL_KEY_LEFT_SUPER      276
-#define MINIMAL_KEY_RIGHT_SHIFT     277
-#define MINIMAL_KEY_RIGHT_CONTROL   278
-#define MINIMAL_KEY_RIGHT_ALT       279
-#define MINIMAL_KEY_RIGHT_SUPER     280
+#define MINIMAL_KEY_LEFT_SHIFT      340
+#define MINIMAL_KEY_LEFT_CONTROL    341
+#define MINIMAL_KEY_LEFT_ALT        342
+#define MINIMAL_KEY_LEFT_SUPER      343
+#define MINIMAL_KEY_RIGHT_SHIFT     344
+#define MINIMAL_KEY_RIGHT_CONTROL   345
+#define MINIMAL_KEY_RIGHT_ALT       346
+#define MINIMAL_KEY_RIGHT_SUPER     347
+#define MINIMAL_KEY_MENU            348
 
-#define MINIMAL_KEY_FIRST           MINIMAL_KEY_ESCAPE
-#define MINIMAL_KEY_LAST            MINIMAL_KEY_RIGHT_SUPER
+#define MINIMAL_KEY_FIRST           MINIMAL_KEY_SPACE
+#define MINIMAL_KEY_LAST            MINIMAL_KEY_MENU
 
 /* mouse buttons */
 #define MINIMAL_MOUSE_BUTTON_UNKNOWN    -1
@@ -187,8 +198,11 @@ void minimalLoggerPrintV(FILE* const stream, MinimalLogLevel level, const char* 
 #define MINIMAL_MOUSE_BUTTON_3          2
 #define MINIMAL_MOUSE_BUTTON_4          3
 #define MINIMAL_MOUSE_BUTTON_5          4
+#define MINIMAL_MOUSE_BUTTON_6          5
+#define MINIMAL_MOUSE_BUTTON_7          6
+#define MINIMAL_MOUSE_BUTTON_8          7
 
-#define MINIMAL_MOUSE_BUTTON_LAST       MINIMAL_MOUSE_BUTTON_5
+#define MINIMAL_MOUSE_BUTTON_LAST       MINIMAL_MOUSE_BUTTON_8
 
 #define MINIMAL_MOUSE_BUTTON_LEFT       MINIMAL_MOUSE_BUTTON_1
 #define MINIMAL_MOUSE_BUTTON_RIGHT      MINIMAL_MOUSE_BUTTON_2

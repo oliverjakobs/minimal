@@ -9,6 +9,18 @@
 #define MINIMAL_CONTEXT_CORE_PROFILE            0x00000001
 #define MINIMAL_CONTEXT_COMPATIBILITY_PROFILE   0x00000002
 
+// platforms
+#define MINIMAL_PLATFORM_WINDOWS
+//#define MINIMAL_PLATFORM_GLFW
+
+#ifdef MINIMAL_PLATFORM_WINDOWS
+#undef MINIMAL_PLATFORM_GLFW
+#endif // MINIMAL_PLATFORM_WINDOWS
+
+#ifdef MINIMAL_PLATFORM_GLFW
+#undef MINIMAL_PLATFORM_WINDOWS
+#endif // MINIMAL_PLATFORM_GLFW
+
 uint8_t minimalPlatformInit();
 uint8_t minimalPlatformTerminate();
 
@@ -40,14 +52,8 @@ void minimalSwapInterval(uint8_t interval);
 uint8_t minimalShouldClose(const MinimalWindow* context);
 void    minimalCloseWindow(MinimalWindow* context);
 
-void minimalWindowMinimize(MinimalWindow* context, uint8_t minimized);
-void minimalWindowMaximize(MinimalWindow* context, uint8_t maximized);
-
-uint8_t minimalWindowIsMinimized(const MinimalWindow* context);
-uint8_t minimalWindowIsMaximized(const MinimalWindow* context);
-
-void minimalGetContentSize(const MinimalWindow* context, uint32_t* w, uint32_t* h);
-void minimalGetWindowSize(const MinimalWindow* context, uint32_t* w, uint32_t* h);
+void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h);
+void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h);
 
 int8_t minimalGetKeyState(const MinimalWindow* context, uint32_t keycode);
 int8_t minimalGetMouseButtonState(const MinimalWindow* context, uint32_t button);
