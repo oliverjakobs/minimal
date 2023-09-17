@@ -55,11 +55,21 @@ static wglCreateContextAttribsARB_T _wglCreateContextAttrARB = NULL;
 static wglSwapIntervalEXT_T         _wglSwapIntervalEXT = NULL;
 static wglChoosePixelFormatARB_T    _wglChoosePixelFormatARB = NULL;
 
+static HMODULE gl_module = NULL;
+
 static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static void minimalCreateKeyTable();
 
 static uint8_t minimalWGLInit()
 {
+    // load opengl library
+    gl_module = LoadLibraryA("opengl32.dll");
+    if (!gl_module)
+    {
+        MINIMAL_ERROR("[WGL] Failed to load opengl32.dll");
+        return MINIMAL_FAIL;
+    }
+
     // create helper window
     HINSTANCE instance = GetModuleHandleW(NULL);
     LPCWSTR class_name = MINIMAL_WNDCLASSNAME;
@@ -131,6 +141,12 @@ static uint8_t minimalWGLInit()
     return MINIMAL_OK;
 }
 
+static void minimalWGLTerminate()
+{
+    if (gl_module)
+        FreeLibrary(gl_module);
+}
+
 uint8_t minimalPlatformInit()
 {
     // register window class
@@ -176,6 +192,8 @@ uint8_t minimalPlatformInit()
 
 uint8_t minimalPlatformTerminate()
 {
+    minimalWGLTerminate();
+
     // unregister window class
     if (!UnregisterClassW(MINIMAL_WNDCLASSNAME, GetModuleHandleW(NULL)))
     {
@@ -346,6 +364,15 @@ void minimalDestroyWindow(MinimalWindow* window)
 
     free(window);
 }
+
+void* minimalGetGLProcAddress(const char* name)
+{
+    void* p = (void*)wglGetProcAddress(name);
+    if (p) return p;
+
+    return (void*)GetProcAddress(gl_module, name);;
+}
+
 
 void minimalSetWindowEventHandler(MinimalWindow* window, void* handler)
 {

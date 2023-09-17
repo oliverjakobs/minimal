@@ -49,6 +49,8 @@ MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, co
 
 void minimalDestroyWindow(MinimalWindow* window) { glfwDestroyWindow((GLFWwindow*)window); }
 
+void* minimalGetGLProcAddress(const char* name) { return glfwGetProcAddress(name); }
+
 void  minimalSetWindowEventHandler(MinimalWindow* window, void* handler)
 {
     glfwSetWindowUserPointer((GLFWwindow*)window, handler);

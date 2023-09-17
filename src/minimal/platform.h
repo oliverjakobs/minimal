@@ -36,6 +36,8 @@ typedef struct
 MinimalWindow* minimalCreateWindow(const char* title, uint32_t w, uint32_t h, const MinimalWndConfig* config);
 void minimalDestroyWindow(MinimalWindow* window);
 
+void* minimalGetGLProcAddress(const char* name);
+
 void  minimalSetWindowEventHandler(MinimalWindow* window, void* handler);
 void* minimalGetWindowEventHandler(MinimalWindow* window);
 
