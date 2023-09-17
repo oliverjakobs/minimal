@@ -8,41 +8,41 @@
 struct MinimalEvent
 {
     uint32_t type;
-    uint32_t uParam;
-    int32_t lParam;
-    int32_t rParam;
-    void* user_data;
+    union
+    {
+        struct
+        {
+            uint32_t uParam;
+            int32_t lParam;
+            int32_t rParam;
+        };
+        void* external;
+    };
 };
 
 void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam)
 {
-    MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam, .user_data = NULL };
+    MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam };
     if (app && app->on_event) app->on_event(app, &e);
 }
 
 void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data)
 {
-    MinimalEvent e = { .type = MINIMAL_EVENT_EXTERNAL, .uParam = type, .user_data = data };
+    MinimalEvent e = { .type = type, .external = data };
     if (app && app->on_event) app->on_event(app, &e);
 }
 
-uint32_t minimalEventExternal(const MinimalEvent* e)
-{
-    if (e->type != MINIMAL_EVENT_EXTERNAL) return 0;
-    return e->uParam; // return external event id
-}
+uint8_t minimalEventIsType(const MinimalEvent* e, uint32_t type) { return e->type == type; }
+uint8_t minimalEventIsExternal(const MinimalEvent* e)            { return e->type > MINIMAL_EVENT_LAST; }
 
-void* minimalExternalEventData(const MinimalEvent* e)
+void* minimalExternalEvent(const MinimalEvent* e)
 {
-    if (e->type != MINIMAL_EVENT_EXTERNAL) return NULL;
-    return e->user_data;
+    return minimalEventIsExternal(e) ? e->external : NULL;
 }
-
-uint8_t minimalCheckEventType(const MinimalEvent* e, uint32_t type) { return e->type == type; }
 
 uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h)
 {
-    if (e->type != MINIMAL_EVENT_WINDOW_SIZE) return 0;
+    if (!minimalEventIsType(e, MINIMAL_EVENT_WINDOW_SIZE)) return 0;
 
     if (w) *w = (float)e->lParam;
     if (h) *h = (float)e->rParam;
@@ -52,7 +52,7 @@ uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h)
 
 int32_t minimalEventMouseButton(const MinimalEvent* e, float* x, float* y)
 {
-    if (e->type != MINIMAL_EVENT_MOUSE_BUTTON) return MINIMAL_MOUSE_BUTTON_UNKNOWN;
+    if (!minimalEventIsType(e, MINIMAL_EVENT_MOUSE_BUTTON)) return MINIMAL_MOUSE_BUTTON_UNKNOWN;
 
     if (x) *x = (float)e->lParam;
     if (y) *y = (float)e->rParam;
@@ -74,7 +74,7 @@ int32_t minimalEventMouseButtonReleased(const MinimalEvent* e, float* x, float* 
 
 uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y)
 {
-    if (e->type != MINIMAL_EVENT_MOUSE_MOVED) return 0;
+    if (!minimalEventIsType(e, MINIMAL_EVENT_MOUSE_MOVED)) return 0;
 
     if (x) *x = (float)e->lParam;
     if (y) *y = (float)e->rParam;
