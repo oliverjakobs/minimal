@@ -11,12 +11,31 @@ struct MinimalEvent
     uint32_t uParam;
     int32_t lParam;
     int32_t rParam;
+    void* user_data;
 };
 
 void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam)
 {
-    MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam };
+    MinimalEvent e = { .type = type, .uParam = uParam, .lParam = lParam, .rParam = rParam, .user_data = NULL };
     if (app && app->on_event) app->on_event(app, &e);
+}
+
+void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data)
+{
+    MinimalEvent e = { .type = MINIMAL_EVENT_EXTERNAL, .uParam = type, .user_data = data };
+    if (app && app->on_event) app->on_event(app, &e);
+}
+
+uint32_t minimalEventExternal(const MinimalEvent* e)
+{
+    if (e->type != MINIMAL_EVENT_EXTERNAL) return 0;
+    return e->uParam; // return external event id
+}
+
+void* minimalExternalEventData(const MinimalEvent* e)
+{
+    if (e->type != MINIMAL_EVENT_EXTERNAL) return NULL;
+    return e->user_data;
 }
 
 uint8_t minimalCheckEventType(const MinimalEvent* e, uint32_t type) { return e->type == type; }

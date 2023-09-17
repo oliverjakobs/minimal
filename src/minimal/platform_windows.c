@@ -362,7 +362,7 @@ static MinimalWindow* _current_context;
 void minimalMakeContextCurrent(MinimalWindow* context) { _current_context = context; }
 MinimalWindow* minimalGetCurrentContext()              { return _current_context; }
 
-void minimalPollEvent(MinimalWindow* context)
+void minimalPollWindowEvents(MinimalWindow* context)
 {
     MSG msg;
     while (PeekMessageW(&msg, context->handle, 0, 0, PM_REMOVE))

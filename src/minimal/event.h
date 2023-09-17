@@ -19,9 +19,15 @@
 #define MINIMAL_EVENT_MOUSE_MOVED       13
 #define MINIMAL_EVENT_MOUSE_SCROLLED    14
 
+#define MINIMAL_EVENT_EXTERNAL          20
+
 void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam);
+void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data);
 
 /* Utility */
+uint32_t minimalEventExternal(const MinimalEvent* e);
+void*    minimalExternalEventData(const MinimalEvent* e);
+
 uint8_t minimalCheckEventType(const MinimalEvent* e, uint32_t type);
 
 uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h);

@@ -62,8 +62,8 @@ void* minimalGetWindowEventHandler(MinimalWindow* window)
 void minimalMakeContextCurrent(MinimalWindow* context) { glfwMakeContextCurrent((GLFWwindow*)context); }
 MinimalWindow* minimalGetCurrentContext()              { return (MinimalWindow*)glfwGetCurrentContext(); }
 
-void minimalPollEvent(MinimalWindow* context)   { glfwPollEvents(); }
-void minimalSwapBuffers(MinimalWindow* context) { glfwSwapBuffers((GLFWwindow*)context); }
+void minimalPollWindowEvents(MinimalWindow* context)    { glfwPollEvents(); }
+void minimalSwapBuffers(MinimalWindow* context)         { glfwSwapBuffers((GLFWwindow*)context); }
 
 void minimalSetWindowTitle(MinimalWindow* context, const char* title)
 {

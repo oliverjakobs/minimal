@@ -42,7 +42,7 @@ void* minimalGetWindowEventHandler(MinimalWindow* window);
 void minimalMakeContextCurrent(MinimalWindow* context);
 MinimalWindow* minimalGetCurrentContext();
 
-void minimalPollEvent(MinimalWindow* context);
+void minimalPollWindowEvents(MinimalWindow* context);
 void minimalSwapBuffers(MinimalWindow* context);
 
 void minimalSetWindowTitle(MinimalWindow* context, const char* title);

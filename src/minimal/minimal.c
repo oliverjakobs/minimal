@@ -106,7 +106,7 @@ void minimalRun(MinimalApp* app)
 
         app->on_tick(app, (float)deltatime);
 
-        minimalPollEvent(app->window);
+        minimalPollWindowEvents(app->window);
         minimalSwapBuffers(app->window);
 
         frames++;
