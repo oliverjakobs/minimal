@@ -16,7 +16,7 @@ struct MinimalEvent
             int32_t lParam;
             int32_t rParam;
         };
-        void* external;
+        const void* external;
     };
 };
 
@@ -26,7 +26,7 @@ void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32
     if (app && app->on_event) app->on_event(app, &e);
 }
 
-void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data)
+void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, const void* data)
 {
     MinimalEvent e = { .type = type, .external = data };
     if (app && app->on_event) app->on_event(app, &e);
@@ -35,7 +35,7 @@ void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data)
 uint8_t minimalEventIsType(const MinimalEvent* e, uint32_t type) { return e->type == type; }
 uint8_t minimalEventIsExternal(const MinimalEvent* e)            { return e->type > MINIMAL_EVENT_LAST; }
 
-void* minimalExternalEvent(const MinimalEvent* e)
+const void* minimalExternalEvent(const MinimalEvent* e)
 {
     return minimalEventIsExternal(e) ? e->external : NULL;
 }

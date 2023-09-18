@@ -22,13 +22,13 @@
 #define MINIMAL_EVENT_LAST              MINIMAL_EVENT_MOUSE_SCROLLED
 
 void minimalDispatchEvent(MinimalApp* app, uint32_t type, uint32_t uParam, int32_t lParam, int32_t rParam);
-void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, void* data);
+void minimalDispatchExternalEvent(MinimalApp* app, uint32_t type, const void* data);
 
 /* Utility */
 uint8_t minimalEventIsType(const MinimalEvent* e, uint32_t type);
 uint8_t minimalEventIsExternal(const MinimalEvent* e);
 
-void*   minimalExternalEvent(const MinimalEvent* e);
+const void* minimalExternalEvent(const MinimalEvent* e);
 
 uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h);
 
