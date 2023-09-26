@@ -32,10 +32,13 @@ const void* minimalExternalEvent(const MinimalEvent* e);
 
 uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h);
 
-int32_t minimalEventMouseButton(const MinimalEvent* e, float* x, float* y);
-int32_t minimalEventMouseButtonPressed(const MinimalEvent* e, float* x, float* y);
-int32_t minimalEventMouseButtonReleased(const MinimalEvent* e, float* x, float* y);
+uint8_t minimalEventMouseButton(const MinimalEvent* e, int8_t button, float* x, float* y);
+uint8_t minimalEventMouseButtonPressed(const MinimalEvent* e, int8_t button, float* x, float* y);
+uint8_t minimalEventMouseButtonReleased(const MinimalEvent* e, int8_t button, float* x, float* y);
+uint16_t minimalEventMouseButtonAction(const MinimalEvent* e);
+
 uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y);
+uint8_t minimalEventMouseScrolled(const MinimalEvent* e, float* xoffset, float* yoffset);
 
 int32_t minimalEventKey(const MinimalEvent* e);
 int32_t minimalEventKeyPressed(const MinimalEvent* e);

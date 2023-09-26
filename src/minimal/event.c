@@ -50,26 +50,31 @@ uint8_t minimalEventWindowSize(const MinimalEvent* e, float* w, float* h)
     return 1;
 }
 
-int32_t minimalEventMouseButton(const MinimalEvent* e, float* x, float* y)
+uint8_t minimalEventMouseButton(const MinimalEvent* e, int8_t button, float* x, float* y)
 {
-    if (!minimalEventIsType(e, MINIMAL_EVENT_MOUSE_BUTTON)) return MINIMAL_MOUSE_BUTTON_UNKNOWN;
+    if (!minimalEventIsType(e, MINIMAL_EVENT_MOUSE_BUTTON)) return 0;
+
+    if (button != (int8_t)MINIMAL_HIWORD(e->uParam)) return 0;
 
     if (x) *x = (float)e->lParam;
     if (y) *y = (float)e->rParam;
 
-    return MINIMAL_HIWORD(e->uParam);
+    return 1;
 }
 
-int32_t minimalEventMouseButtonPressed(const MinimalEvent* e, float* x, float* y)
+uint8_t minimalEventMouseButtonPressed(const MinimalEvent* e, int8_t button, float* x, float* y)
 {
-    int32_t buttoncode = minimalEventMouseButton(e, x, y);
-    return (MINIMAL_LOWORD(e->uParam) == MINIMAL_PRESS) ? buttoncode : MINIMAL_MOUSE_BUTTON_UNKNOWN;
+    return minimalEventMouseButton(e, button, x, y) && MINIMAL_LOWORD(e->uParam) == MINIMAL_PRESS;
 }
 
-int32_t minimalEventMouseButtonReleased(const MinimalEvent* e, float* x, float* y)
+uint8_t minimalEventMouseButtonReleased(const MinimalEvent* e, int8_t button, float* x, float* y)
 {
-    int32_t buttoncode = minimalEventMouseButton(e, x, y);
-    return (MINIMAL_LOWORD(e->uParam) == MINIMAL_RELEASE) ? buttoncode : MINIMAL_MOUSE_BUTTON_UNKNOWN;
+    return minimalEventMouseButton(e, button, x, y) && MINIMAL_LOWORD(e->uParam) == MINIMAL_RELEASE;
+}
+
+uint16_t minimalEventMouseButtonAction(const MinimalEvent* e)
+{
+    return MINIMAL_LOWORD(e->uParam);
 }
 
 uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y)
@@ -78,6 +83,16 @@ uint8_t minimalEventMouseMoved(const MinimalEvent* e, float* x, float* y)
 
     if (x) *x = (float)e->lParam;
     if (y) *y = (float)e->rParam;
+
+    return 1;
+}
+
+uint8_t minimalEventMouseScrolled(const MinimalEvent* e, float* xoffset, float* yoffset)
+{
+    if (!minimalEventIsType(e, MINIMAL_EVENT_MOUSE_SCROLLED)) return 0;
+
+    if (xoffset) *xoffset = (float)e->lParam;
+    if (yoffset) *yoffset = (float)e->rParam;
 
     return 1;
 }
