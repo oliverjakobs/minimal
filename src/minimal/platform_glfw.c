@@ -77,18 +77,28 @@ void minimalSwapInterval(uint8_t interval) { glfwSwapInterval(interval); }
 uint8_t minimalShouldClose(const MinimalWindow* context) { return glfwWindowShouldClose((GLFWwindow*)context); };
 void    minimalCloseWindow(MinimalWindow* context) { glfwSetWindowShouldClose((GLFWwindow*)context, GLFW_TRUE); }
 
-void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
-    glfwGetWindowSize((GLFWwindow*)context, w, w);
+    glfwGetWindowSize((GLFWwindow*)context, w, h);
 }
 
-void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+void minimalGetWindowFrameSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     int left, top, right, bottom;
     glfwGetWindowFrameSize((GLFWwindow*)context, &left, &top, &right, &bottom);
 
     if (w) *w = right - left;
     if (h) *h = bottom - top;
+}
+
+void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+{
+    glfwGetFramebufferSize((GLFWwindow*)context, w, h);
+}
+
+void minimalGetWindowContentScale(const MinimalWindow* context, float* xscale, float* yscale)
+{
+    glfwGetWindowContentScale((GLFWwindow*)context, xscale, yscale);
 }
 
 int8_t minimalGetKeyState(const MinimalWindow* context, uint32_t keycode)

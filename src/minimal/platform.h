@@ -54,8 +54,14 @@ void minimalSwapInterval(uint8_t interval);
 uint8_t minimalShouldClose(const MinimalWindow* context);
 void    minimalCloseWindow(MinimalWindow* context);
 
-void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h);
+/* size in screen coordinates of the content area of the window */
 void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h);
+/* size in screen coordinates of the window including title bar and window frame */
+void minimalGetWindowFrameSize(const MinimalWindow* context, int32_t* w, int32_t* h);
+/* size in pixels of the framebuffer of a window */
+void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h);
+
+void minimalGetWindowContentScale(const MinimalWindow* context, float* xscale, float* yscale);
 
 int8_t minimalGetKeyState(const MinimalWindow* context, uint32_t keycode);
 int8_t minimalGetMouseButtonState(const MinimalWindow* context, uint32_t button);

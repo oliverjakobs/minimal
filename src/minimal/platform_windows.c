@@ -422,7 +422,7 @@ void    minimalWindowMaximize(MinimalWindow* context, uint8_t maximized) { conte
 uint8_t minimalWindowIsMinimized(const MinimalWindow* context) { return context->minimized; }
 uint8_t minimalWindowIsMaximized(const MinimalWindow* context) { return context->maximized; }
 
-void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     RECT rect;
     if (GetClientRect(context->handle, &rect))
@@ -432,7 +432,7 @@ void minimalGetContentSize(const MinimalWindow* context, int32_t* w, int32_t* h)
     }
 }
 
-void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+void minimalGetWindowFrameSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     RECT rect;
     if (GetWindowRect(context->handle, &rect))
@@ -440,6 +440,27 @@ void minimalGetWindowSize(const MinimalWindow* context, int32_t* w, int32_t* h)
         if (w) *w = rect.right - rect.left;
         if (h) *h = rect.bottom - rect.top;
     }
+}
+
+void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h)
+{
+    RECT rect;
+    if (GetClientRect(context->handle, &rect))
+    {
+        if (w) *w = rect.right - rect.left;
+        if (h) *h = rect.bottom - rect.top;
+    }
+}
+
+void minimalGetWindowContentScale(const MinimalWindow* context, float* xscale, float* yscale)
+{
+    const HDC dc = GetDC(NULL);
+    UINT xdpi = GetDeviceCaps(dc, LOGPIXELSX);
+    UINT ydpi = GetDeviceCaps(dc, LOGPIXELSY);
+    ReleaseDC(NULL, dc);
+
+    if (xscale) *xscale = xdpi / (float)USER_DEFAULT_SCREEN_DPI;
+    if (yscale) *yscale = ydpi / (float)USER_DEFAULT_SCREEN_DPI;
 }
 
 int8_t minimalGetKeyState(const MinimalWindow* context, uint32_t keycode)
