@@ -29,19 +29,13 @@ void minimalUpdateInput(MinimalWindow* context)
 uint8_t minimalKeyPressed(int16_t keycode)
 {
     if (!minimalKeycodeValid(keycode)) return 0;
-    return minimalGetKeyState(minimalGetCurrentContext(), keycode) == MINIMAL_PRESS;
+    return key_states[keycode].state && !key_states[keycode].prev;
 }
 
 uint8_t minimalKeyReleased(int16_t keycode)
 {
     if (!minimalKeycodeValid(keycode)) return 0;
-    return minimalGetKeyState(minimalGetCurrentContext(), keycode) == MINIMAL_RELEASE;
-}
-
-uint8_t minimalKeyHit(int16_t keycode)
-{
-    if (!minimalKeycodeValid(keycode)) return 0;
-    return key_states[keycode].state && !key_states[keycode].prev;
+    return key_states[keycode].prev && !key_states[keycode].state;
 }
 
 uint8_t minimalKeyDown(int16_t keycode)
@@ -50,40 +44,57 @@ uint8_t minimalKeyDown(int16_t keycode)
     return key_states[keycode].state;
 }
 
-uint8_t minimalKeyUp(int16_t keycode)
+uint8_t minimalKeyModActive(uint8_t mod)
 {
-    if (!minimalKeycodeValid(keycode)) return 0;
-    return key_states[keycode].prev && !key_states[keycode].state;
+    if (mod == 0) return 1;
+
+    if ((mod & MINIMAL_KEY_MOD_SHIFT) 
+        && !(key_states[MINIMAL_KEY_LEFT_SHIFT].state || key_states[MINIMAL_KEY_RIGHT_SHIFT].state))
+        return 0;
+    if ((mod & MINIMAL_KEY_MOD_CONTROL) 
+        && !(key_states[MINIMAL_KEY_LEFT_CONTROL].state || key_states[MINIMAL_KEY_RIGHT_CONTROL].state))
+        return 0;
+    if ((mod & MINIMAL_KEY_MOD_ALT) 
+        && !(key_states[MINIMAL_KEY_LEFT_ALT].state || key_states[MINIMAL_KEY_RIGHT_ALT].state))
+        return 0;
+    if ((mod & MINIMAL_KEY_MOD_SUPER) 
+        && !(key_states[MINIMAL_KEY_LEFT_SUPER].state || key_states[MINIMAL_KEY_RIGHT_SUPER].state))
+        return 0;
+
+    return 1;
+}
+
+uint8_t minimalKeyPressedMod(int16_t keycode, uint8_t mod)
+{
+    return minimalKeyPressed(keycode) && minimalKeyModActive(mod);
+}
+
+uint8_t minimalKeyReleasedMod(int16_t keycode, uint8_t mod)
+{
+    return minimalKeyReleased(keycode) && minimalKeyModActive(mod);
+}
+
+uint8_t minimalKeyDownMod(int16_t keycode, uint8_t mod)
+{
+    return minimalKeyDown(keycode) && minimalKeyModActive(mod);
 }
 
 uint8_t minimalMousePressed(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
-    return minimalGetMouseButtonState(minimalGetCurrentContext(), button) == MINIMAL_PRESS;
+    return mouse_states[button].state && !mouse_states[button].prev;
 }
 
 uint8_t minimalMouseReleased(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
-    return minimalGetMouseButtonState(minimalGetCurrentContext(), button) == MINIMAL_RELEASE;
-}
-
-uint8_t minimalMouseHit(int8_t button)
-{
-    if (!minimalMouseButtonValid(button)) return 0;
-    return mouse_states[button].state && !mouse_states[button].prev;
+    return mouse_states[button].prev && !mouse_states[button].state;
 }
 
 uint8_t minimalMouseDown(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
     return mouse_states[button].state;
-}
-
-uint8_t minimalMouseUp(int8_t button)
-{
-    if (!minimalMouseButtonValid(button)) return 0;
-    return mouse_states[button].prev && !mouse_states[button].state;
 }
 
 void minimalCursorPos(float* x, float* y)
