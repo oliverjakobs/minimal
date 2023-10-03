@@ -8,21 +8,61 @@ typedef struct
     uint8_t prev;
 } InputState;
 
+typedef struct
+{
+    uint8_t state;
+    uint8_t prev;
+    float clickX, clickY;
+} ButtonState;
+
+typedef struct
+{
+    float posX, posY;
+    float prevX, prevY;
+    float deltaX, deltaY;
+    float scrollX, scrollY;
+
+    ButtonState button[MINIMAL_MOUSE_BUTTON_LAST + 1];
+} MouseState;
+
 static InputState key_states[MINIMAL_KEY_LAST + 1];
-static InputState mouse_states[MINIMAL_MOUSE_BUTTON_LAST + 1];
+static MouseState mouse_state;
+
+static void minimalUpdateButton(uint8_t index, int8_t state)
+{
+    ButtonState* button = &mouse_state.button[index];
+
+    button->prev = button->state;
+    button->state = state;
+
+    if (button->prev == button->state) return;
+
+    if (state == MINIMAL_PRESS)
+    {
+        button->clickX = mouse_state.posX;
+        button->clickY = mouse_state.posY;
+    }
+}
 
 void minimalUpdateInput(MinimalWindow* context)
 {
     for (int16_t i = MINIMAL_KEY_FIRST; i <= MINIMAL_KEY_LAST; ++i)
     {
         key_states[i].prev = key_states[i].state;
-        key_states[i].state = (minimalGetKeyState(context, i) == MINIMAL_PRESS);
+        key_states[i].state = minimalGetKeyState(context, i);
     }
 
-    for (int16_t i = MINIMAL_MOUSE_BUTTON_1; i <= MINIMAL_MOUSE_BUTTON_LAST; ++i)
+    // update mouse motion
+    mouse_state.prevX = mouse_state.posX;
+    mouse_state.prevY = mouse_state.posY;
+    minimalGetCursorPos(context, &mouse_state.posX, &mouse_state.posY);
+    mouse_state.deltaX = mouse_state.posX - mouse_state.prevX;
+    mouse_state.deltaY = mouse_state.posY - mouse_state.prevY;
+
+    // update mouse buttons
+    for (int8_t i = MINIMAL_MOUSE_BUTTON_1; i <= MINIMAL_MOUSE_BUTTON_LAST; ++i)
     {
-        mouse_states[i].prev = mouse_states[i].state;
-        mouse_states[i].state = (minimalGetMouseButtonState(context, i) == MINIMAL_PRESS);
+        minimalUpdateButton(i, minimalGetMouseButtonState(context, i));
     }
 }
 
@@ -82,36 +122,33 @@ uint8_t minimalKeyDownMod(int16_t keycode, uint8_t mod)
 uint8_t minimalMousePressed(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
-    return mouse_states[button].state && !mouse_states[button].prev;
+    return mouse_state.button[button].state && !mouse_state.button[button].prev;
 }
 
 uint8_t minimalMouseReleased(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
-    return mouse_states[button].prev && !mouse_states[button].state;
+    return mouse_state.button[button].prev && !mouse_state.button[button].state;
 }
 
 uint8_t minimalMouseDown(int8_t button)
 {
     if (!minimalMouseButtonValid(button)) return 0;
-    return mouse_states[button].state;
+    return mouse_state.button[button].state;
 }
 
 void minimalCursorPos(float* x, float* y)
 {
-    minimalGetCursorPos(minimalGetCurrentContext(), x, y);
+    if (x) *x = mouse_state.posX;
+    if (y) *y = mouse_state.posY;
 }
 
 float minimalCursorX()
 {
-    float x;
-    minimalCursorPos(&x, NULL);
-    return x;
+    return mouse_state.posX;
 }
 
 float minimalCursorY()
 {
-    float y;
-    minimalCursorPos(NULL, &y);
-    return y;
+    return mouse_state.posY;
 }
