@@ -3,20 +3,34 @@
 
 #include "common.h"
 
-void minimalUpdateInput(MinimalWindow* context);
+typedef struct
+{
+    uint8_t state;
+    uint8_t prev;
+} MinimalInputState;
 
-uint8_t minimalKeyPressed(int16_t keycode);
-uint8_t minimalKeyReleased(int16_t keycode);
-uint8_t minimalKeyDown(int16_t keycode);
+typedef struct
+{
+    MinimalInputState keys[MINIMAL_KEY_LAST + 1];
+    MinimalInputState buttons[MINIMAL_MOUSE_BUTTON_LAST + 1];
 
-uint8_t minimalKeyModActive(uint8_t mod);
+    float cursorX, cursorY;
+} MinimalInput;
 
-uint8_t minimalMousePressed(int8_t button);
-uint8_t minimalMouseReleased(int8_t button);
-uint8_t minimalMouseDown(int8_t button);
+void minimalUpdateInput(const MinimalWindow* context, MinimalInput* input);
 
-void minimalCursorPos(float* x, float* y);
-float minimalCursorX();
-float minimalCursorY();
+uint8_t minimalKeyPressed(const MinimalInput* input, int16_t keycode);
+uint8_t minimalKeyReleased(const MinimalInput* input, int16_t keycode);
+uint8_t minimalKeyDown(const MinimalInput* input, int16_t keycode);
+
+uint8_t minimalKeyModActive(const MinimalInput* input, uint8_t mod);
+
+uint8_t minimalMousePressed(const MinimalInput* input, int8_t button);
+uint8_t minimalMouseReleased(const MinimalInput* input, int8_t button);
+uint8_t minimalMouseDown(const MinimalInput* input, int8_t button);
+
+void minimalCursorPos(const MinimalInput* input, float* x, float* y);
+float minimalCursorX(const MinimalInput* input);
+float minimalCursorY(const MinimalInput* input);
 
 #endif // !MINIMAL_INPUT_H

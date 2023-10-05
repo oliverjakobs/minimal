@@ -27,6 +27,7 @@ typedef void (*MinimalTickCB)    (MinimalApp* app, float deltatime);
 struct MinimalApp
 {
     MinimalWindow* window;
+    MinimalInput input;
 
     MinimalLoadCB    on_load;
     MinimalDestroyCB on_destroy;

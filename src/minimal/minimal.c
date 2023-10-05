@@ -102,7 +102,7 @@ void minimalRun(MinimalApp* app)
         deltatime = time - lastframe;
         lastframe = time;
 
-        minimalUpdateInput(app->window);
+        minimalUpdateInput(app->window, &app->input);
 
         app->on_tick(app, (float)deltatime);
 
