@@ -1,2 +1,2 @@
 # Minimal
-Small application framework for OpenGL development. 
+Small singleheader application framework for OpenGL and Vulkan development. 
