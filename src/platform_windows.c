@@ -87,10 +87,12 @@ void minimalSetWindowHint(MinimalWindowHint name, int32_t value)
 
 struct MinimalWindow
 {
-    HINSTANCE   instance;
-    HWND        handle;
+    HWND handle;
+
+#ifndef MINIMAL_NO_CONTEXT
     HDC         deviceContext;
     HGLRC       renderContext;
+#endif
 
     uint8_t shouldClose;
 };
@@ -101,7 +103,7 @@ MinimalWindow* minimalCreateWindow(const char* title, int32_t x, int32_t y, uint
     if (!window) return NULL;
 
     // create window
-    window->instance = GetModuleHandleW(NULL);
+    HINSTANCE instance = GetModuleHandleW(NULL);
 
     RECT rect = { 0 };
     DWORD style = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
@@ -113,7 +115,7 @@ MinimalWindow* minimalCreateWindow(const char* title, int32_t x, int32_t y, uint
     w += rect.right - rect.left;
     h += rect.bottom - rect.top;
 
-    window->handle = CreateWindowExW(styleEx, MINIMAL_WNDCLASSNAME, NULL, style, x, y, w, h, 0, 0, window->instance, 0);
+    window->handle = CreateWindowExW(styleEx, MINIMAL_WNDCLASSNAME, NULL, style, x, y, w, h, 0, 0, instance, 0);
     if (!window->handle)
     {
         MINIMAL_ERROR("[Platform] Failed to create window");
@@ -123,12 +125,11 @@ MinimalWindow* minimalCreateWindow(const char* title, int32_t x, int32_t y, uint
 
     minimalSetWindowTitle(window, title);
 
-    window->deviceContext = GetDC(window->handle);
-    window->renderContext = NULL;
     window->shouldClose = 0;
 
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
 
+    window->deviceContext = GetDC(window->handle);
     window->renderContext = minimalCreateRenderContext(window->deviceContext);
     if (!window->renderContext)
     {
@@ -143,7 +144,8 @@ MinimalWindow* minimalCreateWindow(const char* title, int32_t x, int32_t y, uint
 
 void minimalDestroyWindow(MinimalWindow* window)
 {
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
+
     // destroy render context
     if (window->renderContext)
     {
@@ -157,13 +159,14 @@ void minimalDestroyWindow(MinimalWindow* window)
             MINIMAL_ERROR("[WGL] Failed to delete render context");
         }
     }
-#endif
 
     // destroy device context
     if (window->deviceContext && !ReleaseDC(window->handle, window->deviceContext))
     {
         MINIMAL_ERROR("[Platform] Failed to release device context");
     }
+
+#endif
 
     // destroy window
     if (window->handle && !DestroyWindow(window->handle))
@@ -193,6 +196,14 @@ void minimalSetWindowTitle(MinimalWindow* context, const char* title)
 uint8_t minimalShouldClose(const MinimalWindow* context) { return context->shouldClose; }
 void    minimalClose(MinimalWindow* context)             { context->shouldClose = 1; }
 
+double minimalGetTime()
+{
+    uint64_t value;
+    QueryPerformanceCounter((LARGE_INTEGER*)&value);
+
+    return (double)(value - _minimalTimerOffset) / _minimalTimerFrequency;
+}
+
 void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h)
 {
     RECT rect;
@@ -214,12 +225,9 @@ void minimalGetWindowContentScale(const MinimalWindow* context, float* xscale, f
     if (yscale) *yscale = ydpi / (float)USER_DEFAULT_SCREEN_DPI;
 }
 
-double minimalGetTime()
+void* minimalGetNativeWindowHandle(const MinimalWindow* window)
 {
-    uint64_t value;
-    QueryPerformanceCounter((LARGE_INTEGER*)&value);
-
-    return (double)(value - _minimalTimerOffset) / _minimalTimerFrequency;
+    return window->handle;
 }
 
 
@@ -365,69 +373,8 @@ static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-#if defined(MINIMAL_VULKAN)
-
-#include <vulkan/vulkan_win32.h>
-
-VkResult minimalCreateWindowSurface(VkInstance instance, const MinimalWindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface)
-{
-    VkWin32SurfaceCreateInfoKHR create_info = {
-        .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-        .hinstance = window->instance,
-        .hwnd = window->handle,
-        .flags = 0
-    };
-
-    return vkCreateWin32SurfaceKHR(instance, &create_info, allocator, surface);
-}
-
-static const char* const extensions[] = {
-    VK_KHR_SURFACE_EXTENSION_NAME,
-    "VK_KHR_win32_surface",
-};
-
-const char* const *minimalQueryRequiredExtensions(uint32_t* count)
-{
-    *count = sizeof(extensions) / sizeof(extensions[0]);
-    return extensions;
-}
-
-#endif
-
-
-#if defined(MINIMAL_NO_CONTEXT)
-
-void minimalPresentSurface(MinimalWindow* window, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const void* pixels)
-{
-    BITMAPINFO info = {
-        .bmiHeader = {
-            .biSize = sizeof(info.bmiHeader),
-            .biWidth = (LONG)w,
-            .biHeight = -(LONG)h,
-            .biPlanes = 1,
-            .biBitCount = 32,
-            .biCompression = BI_RGB,
-        }
-    };
-
-    RECT rect;
-    GetClientRect(window->handle, &rect);
-
-    int screenW = rect.right - rect.left;
-    int screenH = rect.bottom - rect.top;
-
-    StretchDIBits(window->deviceContext,
-        0, 0, screenW, screenH,
-        x, y, w, h,
-        pixels, &info, DIB_RGB_COLORS, SRCCOPY);
-}
-
-#endif
-
-
-
 /* --------------------------| wgl |------------------------------------- */
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
 
 /* Accepted as an attribute name in <*attribList> */
 #define WGL_CONTEXT_MAJOR_VERSION_ARB               0x2091
@@ -634,6 +581,6 @@ void minimalSwapInterval(uint8_t interval)
     if (_wglSwapIntervalEXT) _wglSwapIntervalEXT(interval);
 }
 
-#endif // !MINIMAL_OPENGL
+#endif // !MINIMAL_NO_CONTEXT
 
 #endif // MINIMAL_PLATFORM_WINDOWS

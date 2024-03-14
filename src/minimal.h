@@ -317,15 +317,10 @@ char minimalEventChar(const MinimalEvent* e);
 #define MINIMAL_PLATFORM_WINDOWS
 #define MINIMAL_PLATFORM_GLFW
 
-possible contexts 
-#define MINIMAL_VULKAN
-#define MINIMAL_OPENGL
+dissable opengl context creation with:
+#define MINIMAL_NO_CONTEXT
 
 */
-
-#if defined(MINIMAL_VULKAN) && defined(MINIMAL_OPENGL)
-#error Only one context type can be defined at a time!
-#endif
 
 typedef enum
 {
@@ -354,26 +349,14 @@ double minimalGetTime();
 void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h);
 void minimalGetWindowContentScale(const MinimalWindow* context, float* xscale, float* yscale);
 
+void* minimalGetNativeWindowHandle(const MinimalWindow* window);
 
-#if defined(MINIMAL_VULKAN)
-
-#include <vulkan/vulkan.h>
-
-VkResult minimalCreateWindowSurface(VkInstance instance, const MinimalWindow* window, const VkAllocationCallbacks* allocator, VkSurfaceKHR* surface);
-
-const char* const* minimalQueryRequiredExtensions(uint32_t* count);
-
-#elif defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
 
 void* minimalGetGLProcAddress(const char* name);
 void minimalSwapInterval(uint8_t interval);
 
 void minimalSwapBuffers(MinimalWindow* context);
-
-#else // No context
-
-#define MINIMAL_NO_CONTEXT
-void minimalPresentSurface(MinimalWindow* window, uint32_t x, uint32_t y, uint32_t w, uint32_t h, const void* pixels);
 
 #endif
 
