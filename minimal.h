@@ -761,10 +761,12 @@ static uint64_t _minimalTimerOffset = 0;
 
 static LRESULT minimalWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
+
 static uint8_t minimalWGLInit();
 static void minimalWGLTerminate();
 static HGLRC minimalCreateRenderContext(HDC dc);
+
 #endif
 
 uint8_t minimalPlatformInit()
@@ -797,7 +799,7 @@ uint8_t minimalPlatformInit()
 
     QueryPerformanceCounter((LARGE_INTEGER*)&_minimalTimerOffset);
 
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
     // init wgl
     if (!minimalWGLInit())
     {
@@ -811,7 +813,7 @@ uint8_t minimalPlatformInit()
 
 uint8_t minimalPlatformTerminate()
 {
-#if defined(MINIMAL_OPENGL)
+#ifndef MINIMAL_NO_CONTEXT
     minimalWGLTerminate();
 #endif
 
