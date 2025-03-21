@@ -355,6 +355,9 @@ void minimalPollWindowEvents(MinimalWindow* window);
 uint8_t minimalShouldClose(const MinimalWindow* window);
 void minimalClose(MinimalWindow* window);
 
+void minimalMaximize(MinimalWindow* window);
+void minimalMinimize(MinimalWindow* window);
+
 double minimalGetTime();
 
 void minimalGetFramebufferSize(const MinimalWindow* context, int32_t* w, int32_t* h);

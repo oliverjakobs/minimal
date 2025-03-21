@@ -198,6 +198,9 @@ void minimalSetWindowTitle(MinimalWindow* context, const char* title)
 uint8_t minimalShouldClose(const MinimalWindow* context) { return context->shouldClose; }
 void    minimalClose(MinimalWindow* context)             { context->shouldClose = 1; }
 
+void minimalMaximize(MinimalWindow* window) { ShowWindow(window->handle, SW_SHOWMAXIMIZED); }
+void minimalMinimize(MinimalWindow* window) { ShowWindow(window->handle, SW_MINIMIZE); }
+
 double minimalGetTime()
 {
     uint64_t value;
